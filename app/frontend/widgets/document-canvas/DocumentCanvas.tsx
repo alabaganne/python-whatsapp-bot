@@ -2,8 +2,9 @@
 
 import type { ExcalidrawImperativeAPI, ExcalidrawProps } from "@excalidraw/excalidraw/types";
 import dynamic from "next/dynamic";
-import { memo, startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { computeSceneSignature } from "@/shared/libs/documents/scene-utils";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+// import { computeSceneSignature } from "@/shared/libs/documents/scene-utils";
 
 type ExcalidrawAPI = ExcalidrawImperativeAPI;
 
@@ -45,70 +46,25 @@ function DocumentCanvasComponent({
 	const containerRef = useRef<HTMLDivElement | null>(null);
 	const apiRef = useRef<ExcalidrawAPI | null>(null);
 	const [mountReady, setMountReady] = useState(false);
-	const lastAppliedSceneSigRef = useRef<string | null>(null);
+	// retained for future diffing optimizations (not used at the moment)
+	// const lastAppliedSceneSigRef = useRef<string | null>(null);
 	const didNotifyApiRef = useRef<boolean>(false);
 	const prevDirRef = useRef<string | null>(null);
 	const pointerActiveRef = useRef<boolean>(false);
+	// Queue external scene updates while pointer is active to avoid jank
+	const pendingSceneRef = useRef<{
+		elements?: unknown[];
+		appState?: Record<string, unknown>;
+		files?: Record<string, unknown>;
+	} | null>(null);
 
-	// Stable props to avoid unnecessary Excalidraw re-renders
+	// Pass onChange directly - don't defer or batch it
+	// Excalidraw needs immediate onChange callbacks to repaint the canvas during drags
+	// Viewer mirroring throttling is handled in use-dual-canvas.ts
 	const noopOnChange = useCallback(() => {}, []);
 	const mergedOnChange = (onChange || (noopOnChange as NonNullable<ExcalidrawProps["onChange"]>)) as NonNullable<
 		ExcalidrawProps["onChange"]
 	>;
-
-	// Defer and coalesce onChange to the next animation frame to avoid scheduling
-	// state updates during Excalidraw's own render/update cycle
-	type OnChange = NonNullable<ExcalidrawProps["onChange"]>;
-	type OnChangeArgs = Parameters<OnChange>;
-	const userOnChangeRef = useRef<OnChange>(mergedOnChange);
-	useEffect(() => {
-		userOnChangeRef.current = mergedOnChange;
-	}, [mergedOnChange]);
-	const lastElementsRef = useRef<OnChangeArgs[0] | null>(null);
-	const lastAppStateRef = useRef<OnChangeArgs[1] | null>(null);
-	const lastFilesRef = useRef<OnChangeArgs[2] | null>(null);
-	const rafOnChangeRef = useRef<number | null>(null);
-	const deferredOnChange = useCallback<OnChange>((elements, appState, files) => {
-		lastElementsRef.current = elements;
-		lastAppStateRef.current = appState;
-		lastFilesRef.current = files;
-		if (rafOnChangeRef.current != null) return;
-		try {
-			// Use startTransition to mark this update as non-urgent and avoid warning
-			rafOnChangeRef.current = requestAnimationFrame(() => {
-				rafOnChangeRef.current = null;
-				startTransition(() => {
-					try {
-						const els = (lastElementsRef.current || elements) as OnChangeArgs[0];
-						const app = (lastAppStateRef.current || appState) as OnChangeArgs[1];
-						const bin = (lastFilesRef.current || files) as OnChangeArgs[2];
-						userOnChangeRef.current?.(els, app, bin);
-					} catch {}
-				});
-			});
-		} catch {
-			setTimeout(() => {
-				startTransition(() => {
-					try {
-						const els = (lastElementsRef.current || elements) as OnChangeArgs[0];
-						const app = (lastAppStateRef.current || appState) as OnChangeArgs[1];
-						const bin = (lastFilesRef.current || files) as OnChangeArgs[2];
-						userOnChangeRef.current?.(els, app, bin);
-					} catch {}
-				});
-			}, 0);
-		}
-	}, []);
-	useEffect(() => {
-		return () => {
-			if (rafOnChangeRef.current != null) {
-				try {
-					cancelAnimationFrame(rafOnChangeRef.current);
-				} catch {}
-				rafOnChangeRef.current = null;
-			}
-		};
-	}, []);
 
 	// Don't pass initialData to avoid setState during mount; set via onApiReady instead
 	const initialData = useMemo(() => ({}), []);
@@ -146,16 +102,85 @@ function DocumentCanvasComponent({
 	// Keep canvas sized when container/viewport changes
 	useExcalidrawResize(containerRef, apiRef);
 
+	// Also refresh on scroll and after CSS transitions (e.g., drawer slide) to prevent pointer offset
+	useEffect(() => {
+		let scheduled = false;
+		const scheduleRefresh = () => {
+			if (scheduled || pointerActiveRef.current) return;
+			scheduled = true;
+			try {
+				requestAnimationFrame(() => {
+					try {
+						if (!pointerActiveRef.current) {
+							apiRef.current?.refresh?.();
+						}
+					} finally {
+						scheduled = false;
+					}
+				});
+			} catch {
+				setTimeout(() => {
+					if (!pointerActiveRef.current) {
+						apiRef.current?.refresh?.();
+					}
+					scheduled = false;
+				}, 0);
+			}
+		};
+		const onScroll = () => scheduleRefresh();
+		const onTransitionEnd = () => {
+			// allow final transform to settle, then refresh a few times
+			scheduleRefresh();
+			setTimeout(scheduleRefresh, 60);
+			setTimeout(scheduleRefresh, 140);
+		};
+		window.addEventListener("scroll", onScroll, {
+			capture: true,
+			passive: true,
+		} as EventListenerOptions);
+		document.addEventListener("transitionend", onTransitionEnd, true);
+		try {
+			window.visualViewport?.addEventListener?.("scroll", onScroll);
+		} catch {}
+		return () => {
+			window.removeEventListener("scroll", onScroll, {
+				capture: true,
+			} as EventListenerOptions);
+			document.removeEventListener("transitionend", onTransitionEnd, true);
+			try {
+				window.visualViewport?.removeEventListener?.("scroll", onScroll);
+			} catch {}
+		};
+	}, []);
+
 	// Track active pointer/touch gestures to avoid racing our refresh bursts with internal updates
 	useEffect(() => {
 		let touchCount = 0;
 		const onDown = () => {
 			pointerActiveRef.current = true;
+			try {
+				(globalThis as unknown as { __docPointerActive?: boolean }).__docPointerActive = true;
+			} catch {}
 		};
 		const onUp = () => {
 			setTimeout(() => {
 				if (touchCount === 0) {
 					pointerActiveRef.current = false;
+					try {
+						(globalThis as unknown as { __docPointerActive?: boolean }).__docPointerActive = false;
+					} catch {}
+					// Flush any pending scene update coalesced during drag
+					try {
+						const pending = pendingSceneRef.current;
+						if (pending && apiRef.current) {
+							(
+								apiRef.current as unknown as {
+									updateScene?: (s: Record<string, unknown>) => void;
+								}
+							)?.updateScene?.(pending as Record<string, unknown>);
+							pendingSceneRef.current = null;
+						}
+					} catch {}
 				}
 			}, 120);
 		};
@@ -163,6 +188,9 @@ function DocumentCanvasComponent({
 			touchCount = e.touches.length;
 			if (touchCount > 0) {
 				pointerActiveRef.current = true;
+				try {
+					(globalThis as unknown as { __docPointerActive?: boolean }).__docPointerActive = true;
+				} catch {}
 			}
 		};
 		const onTouchEnd = (e: TouchEvent) => {
@@ -170,6 +198,21 @@ function DocumentCanvasComponent({
 			setTimeout(() => {
 				if (touchCount === 0) {
 					pointerActiveRef.current = false;
+					try {
+						(globalThis as unknown as { __docPointerActive?: boolean }).__docPointerActive = false;
+					} catch {}
+					// Flush any pending scene update coalesced during drag
+					try {
+						const pending = pendingSceneRef.current;
+						if (pending && apiRef.current) {
+							(
+								apiRef.current as unknown as {
+									updateScene?: (s: Record<string, unknown>) => void;
+								}
+							)?.updateScene?.(pending as Record<string, unknown>);
+							pendingSceneRef.current = null;
+						}
+					} catch {}
 				}
 			}, 120);
 		};
@@ -177,6 +220,21 @@ function DocumentCanvasComponent({
 			touchCount = 0;
 			setTimeout(() => {
 				pointerActiveRef.current = false;
+				try {
+					(globalThis as unknown as { __docPointerActive?: boolean }).__docPointerActive = false;
+				} catch {}
+				// Flush any pending scene update coalesced during drag
+				try {
+					const pending = pendingSceneRef.current;
+					if (pending && apiRef.current) {
+						(
+							apiRef.current as unknown as {
+								updateScene?: (s: Record<string, unknown>) => void;
+							}
+						)?.updateScene?.(pending as Record<string, unknown>);
+						pendingSceneRef.current = null;
+					}
+				} catch {}
 			}, 120);
 		};
 		window.addEventListener("pointerdown", onDown, true);
@@ -299,66 +357,42 @@ function DocumentCanvasComponent({
 		};
 	}, [mountReady]);
 
-	// Extra stabilization refreshes around context menu and page visibility
+	// Coalesced refresh for context and visibility; avoid burst chains
 	useEffect(() => {
 		let scheduled = false;
-		const scheduleRefreshBurst = () => {
+		const scheduleRefresh = () => {
 			if (scheduled) return;
 			scheduled = true;
-			try {
-				const doRefresh = () => {
-					// Skip while a gesture is active to avoid racing with Excalidraw internals
-					if (pointerActiveRef.current) return;
-					apiRef.current?.refresh?.();
-				};
-				requestAnimationFrame(() => {
-					doRefresh();
-					setTimeout(doRefresh, 80);
-					setTimeout(doRefresh, 160);
-					setTimeout(() => {
-						doRefresh();
-						scheduled = false;
-					}, 320);
-				});
-			} catch {
+			requestAnimationFrame(() => {
+				if (!pointerActiveRef.current) apiRef.current?.refresh?.();
 				scheduled = false;
-			}
+			});
 		};
-
-		const onContextMenu = () => {
-			// Single refresh burst on context menu - no interval needed
-			scheduleRefreshBurst();
-		};
+		const onContextMenu = () => scheduleRefresh();
 		const onVisibility = () => {
-			if (!document.hidden) scheduleRefreshBurst();
+			if (!document.hidden) scheduleRefresh();
 		};
-
 		document.addEventListener("contextmenu", onContextMenu, true);
 		document.addEventListener("visibilitychange", onVisibility);
-
-		// Catch pointer interactions near edges and scrolling in ancestors
-		const onPointerUp = () => scheduleRefreshBurst();
-		const onScroll = () => scheduleRefreshBurst();
+		const onPointerUp = () => scheduleRefresh();
+		const onScroll = () => scheduleRefresh();
 		window.addEventListener("pointerup", onPointerUp, true);
 		window.addEventListener("scroll", onScroll, true);
-
-		// Observe minimal attribute changes on the container that may affect layout
 		const target = containerRef.current as HTMLElement | null;
 		let observer: MutationObserver | null = null;
 		try {
 			if (target) {
-				observer = new MutationObserver(() => scheduleRefreshBurst());
+				observer = new MutationObserver(() => scheduleRefresh());
 				observer.observe(target, {
 					attributes: true,
 					attributeFilter: ["style", "class"],
 				});
 			}
 		} catch {}
-
-		// Observe document theme class changes and refresh
+		// Keep theme observer for correctness but coalesce into single rAF
 		let themeObserver: MutationObserver | null = null;
 		try {
-			themeObserver = new MutationObserver(() => scheduleRefreshBurst());
+			themeObserver = new MutationObserver(() => scheduleRefresh());
 			themeObserver.observe(document.documentElement, {
 				attributes: true,
 				attributeFilter: ["class"],
@@ -394,21 +428,10 @@ function DocumentCanvasComponent({
 		} catch {}
 	}, []);
 
-	// Apply external scene updates when provided, avoiding redundant updates
+	// Apply external scene updates when provided. Keep it lightweight to avoid jank.
 	useEffect(() => {
 		try {
 			if (!apiRef.current || !scene) return;
-			const nextSig = computeSceneSignature(
-				(scene.elements as unknown[]) || [],
-				(scene.appState as Record<string, unknown>) || {},
-				(scene.files as Record<string, unknown>) || {}
-			);
-			try {
-				console.log(
-					`[DocumentCanvas] 🔄 external scene prop: elements=${Array.isArray(scene.elements) ? (scene.elements as unknown[]).length : 0}, sig=${(nextSig || "").slice(0, 8)}`
-				);
-			} catch {}
-			if (nextSig && nextSig === (lastAppliedSceneSigRef.current || null)) return;
 			// Cast to any to avoid coupling to Excalidraw internal element types
 			const doUpdate = () => {
 				try {
@@ -421,43 +444,28 @@ function DocumentCanvasComponent({
 							zenModeEnabled: Boolean(zenModeEnabled),
 						},
 					};
-					// Defer update to avoid flushSync inside lifecycle
-					Promise.resolve().then(() => {
-						try {
-							requestAnimationFrame(() => {
-								try {
-									(
-										apiRef.current as unknown as {
-											updateScene: (s: Record<string, unknown>) => void;
-										}
-									).updateScene(sceneToApply as Record<string, unknown>);
-								} catch {}
-							});
-						} catch {}
-					});
-					lastAppliedSceneSigRef.current = nextSig;
-					try {
-						console.log(
-							`[DocumentCanvas] ✅ applied scene: elements=${Array.isArray(scene.elements) ? (scene.elements as unknown[]).length : 0}, sig=${(nextSig || "").slice(0, 8)}`
-						);
-					} catch {}
-				} catch {}
-			};
-			try {
-				if (typeof requestAnimationFrame === "function") {
+					// If a drag is active, coalesce updates until pointer is released
+					if (pointerActiveRef.current) {
+						pendingSceneRef.current = sceneToApply as unknown as {
+							elements?: unknown[];
+							appState?: Record<string, unknown>;
+							files?: Record<string, unknown>;
+						};
+						return;
+					}
+					// Single rAF to apply; avoid nested rAF→setTimeout chains
 					requestAnimationFrame(() => {
 						try {
-							requestAnimationFrame(() => setTimeout(doUpdate, 0));
-						} catch {
-							setTimeout(doUpdate, 0);
-						}
+							(
+								apiRef.current as unknown as {
+									updateScene: (s: Record<string, unknown>) => void;
+								}
+							).updateScene(sceneToApply as Record<string, unknown>);
+						} catch {}
 					});
-				} else {
-					setTimeout(doUpdate, 0);
-				}
-			} catch {
-				setTimeout(doUpdate, 0);
-			}
+				} catch {}
+			};
+			doUpdate();
 		} catch {}
 	}, [scene, viewModeEnabled, zenModeEnabled]);
 
@@ -536,7 +544,7 @@ function DocumentCanvasComponent({
 				<Excalidraw
 					theme={theme}
 					langCode={langCode as unknown as string}
-					onChange={deferredOnChange}
+					onChange={mergedOnChange}
 					{...(uiOptions ? { UIOptions: uiOptions } : {})}
 					initialData={initialData}
 					excalidrawAPI={(api: ExcalidrawImperativeAPI) => {

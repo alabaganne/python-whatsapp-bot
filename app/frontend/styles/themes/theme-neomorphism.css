@@ -164,8 +164,7 @@
 }
 
 /* Inputs: inset neomorphic fields */
-.theme-neomorphism
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.theme-neomorphism input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 .theme-neomorphism textarea,
 .theme-neomorphism select {
 	background-color: hsl(var(--card));
@@ -179,8 +178,7 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 		background-color 0.2s ease;
 }
 
-.theme-neomorphism
-	input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+.theme-neomorphism input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
 .theme-neomorphism textarea:focus,
 .theme-neomorphism select:focus {
 	box-shadow:
@@ -193,37 +191,25 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 /* Override Tailwind shadow utilities to use theme shadows */
 .theme-neomorphism .shadow {
 	--tw-shadow: var(--shadow);
-	box-shadow:
-		var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
-		var(--tw-shadow);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 .theme-neomorphism .shadow-sm {
 	--tw-shadow: var(--shadow-sm);
-	box-shadow:
-		var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
-		var(--tw-shadow);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 .theme-neomorphism .shadow-md {
 	--tw-shadow: var(--shadow-md);
-	box-shadow:
-		var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
-		var(--tw-shadow);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 .theme-neomorphism .shadow-lg {
 	--tw-shadow: var(--shadow-lg);
-	box-shadow:
-		var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
-		var(--tw-shadow);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 .theme-neomorphism .shadow-xl {
 	--tw-shadow: var(--shadow-xl);
-	box-shadow:
-		var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
-		var(--tw-shadow);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 .theme-neomorphism .shadow-2xl {
 	--tw-shadow: var(--shadow-2xl);
-	box-shadow:
-		var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
-		var(--tw-shadow);
+	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }

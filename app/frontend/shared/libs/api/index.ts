@@ -3,6 +3,11 @@ import { i18n } from "@shared/libs/i18n";
 
 type Json = Record<string, unknown>;
 
+// Dedup/cache for fetchCustomer to avoid duplicate GETs in rapid succession
+const customerFetchInFlight = new Map<string, Promise<Json>>();
+const customerFetchCache = new Map<string, { at: number; data: Json }>();
+const CUSTOMER_FETCH_TTL_MS = 1500; // small TTL to coalesce concurrent callers
+
 export function getMessage(key: string, isLocalized?: boolean): string {
 	return i18n.getMessage(key, isLocalized);
 }
@@ -103,16 +108,49 @@ export async function fetchVacations(): Promise<Json> {
 // === Customers (documents) ===
 export async function fetchCustomer(waId: string): Promise<Json> {
 	const id = encodeURIComponent(waId);
-	const startTime = performance.now();
-	console.log(`[API] 🔍 GET customers/${id}`);
-	// Use callPythonBackend to bypass Next.js proxy and call Python directly
-	const { callPythonBackend } = await import("@shared/libs/backend");
-	const result = await callPythonBackend(`/customers/${id}`, {
-		method: "GET",
-	});
-	const elapsed = performance.now() - startTime;
-	console.log(`[API] ✅ GET customers/${id} completed in ${elapsed.toFixed(1)}ms:`, result);
-	return result as Json;
+
+	// Short-lived cache to avoid back-to-back GETs across separate call sites
+	const cached = customerFetchCache.get(id);
+	if (cached && Date.now() - cached.at < CUSTOMER_FETCH_TTL_MS) {
+		try {
+			console.log(`[API] ♻️ GET customers/${id} served from cache`);
+		} catch {}
+		return cached.data as Json;
+	}
+
+	// Join in-flight request if one exists for this id
+	const existing = customerFetchInFlight.get(id);
+	if (existing) {
+		try {
+			console.log(`[API] ⏳ GET customers/${id} dedup: joining in-flight request`);
+		} catch {}
+		return existing;
+	}
+
+	const task = (async () => {
+		const startTime = performance.now();
+		try {
+			console.log(`[API] 🔍 GET customers/${id}`);
+			// Use callPythonBackend to bypass Next.js proxy and call Python directly
+			const { callPythonBackend } = await import("@shared/libs/backend");
+			const result = (await callPythonBackend(`/customers/${id}`, {
+				method: "GET",
+			})) as Json;
+			const elapsed = performance.now() - startTime;
+			try {
+				console.log(`[API] ✅ GET customers/${id} completed in ${elapsed.toFixed(1)}ms`, result);
+			} catch {}
+			// Populate short TTL cache
+			customerFetchCache.set(id, { at: Date.now(), data: result });
+			return result;
+		} finally {
+			// Ensure we always clear in-flight entry
+			customerFetchInFlight.delete(id);
+		}
+	})();
+
+	customerFetchInFlight.set(id, task);
+	return task;
 }
 
 export async function saveCustomerDocument(input: {

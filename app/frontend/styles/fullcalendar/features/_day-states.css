@@ -9,10 +9,8 @@
 	position: relative;
 }
 
-.fc-multimonth
-	:where(.fc-daygrid-day.fc-day-today:not(.fc-day-past) .fc-daygrid-day-frame),
-.fc-daygrid
-	:where(.fc-daygrid-day.fc-day-today:not(.fc-day-past) .fc-daygrid-day-frame) {
+.fc-multimonth :where(.fc-daygrid-day.fc-day-today:not(.fc-day-past) .fc-daygrid-day-frame),
+.fc-daygrid :where(.fc-daygrid-day.fc-day-today:not(.fc-day-past) .fc-daygrid-day-frame) {
 	background: linear-gradient(
 		135deg,
 		hsl(var(--primary) / 0.15) 0%,
@@ -57,16 +55,9 @@
 }
 
 /* Today with selection */
-.fc-multimonth .fc-daygrid-day.fc-day-today.fc-day-selected:not(.fc-day-past)
-	.fc-daygrid-day-frame,
-.fc-daygrid
-	.fc-daygrid-day.fc-day-today.fc-day-selected:not(.fc-day-past)
-	.fc-daygrid-day-frame {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--accent) / 0.2) 0%,
-		hsl(var(--primary) / 0.15) 100%
-	);
+.fc-multimonth .fc-daygrid-day.fc-day-today.fc-day-selected:not(.fc-day-past) .fc-daygrid-day-frame,
+.fc-daygrid .fc-daygrid-day.fc-day-today.fc-day-selected:not(.fc-day-past) .fc-daygrid-day-frame {
+	background: linear-gradient(135deg, hsl(var(--accent) / 0.2) 0%, hsl(var(--primary) / 0.15) 100%);
 	border: 2px solid hsl(var(--accent) / 0.5);
 	box-shadow: 0 2px 8px hsl(var(--accent) / 0.2);
 	z-index: var(--z-calendar-event);
@@ -87,10 +78,7 @@
 }
 
 /* Allow past more links to be clickable in free roam mode */
-[data-free-roam="true"]
-	.fc-multimonth
-	.fc-daygrid-day.fc-day-past
-	.fc-more-link,
+[data-free-roam="true"] .fc-multimonth .fc-daygrid-day.fc-day-past .fc-more-link,
 [data-free-roam="true"] .fc-daygrid .fc-daygrid-day.fc-day-past .fc-more-link {
 	pointer-events: auto;
 	cursor: pointer;
@@ -149,24 +137,15 @@
 }
 
 /* SELECTED DATE STYLING */
-.fc-multimonth .fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(
-		.fc-day-disabled
-	)
-	.fc-daygrid-day-frame,
-.fc-daygrid
-	.fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled)
-	.fc-daygrid-day-frame {
+.fc-multimonth .fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled) .fc-daygrid-day-frame,
+.fc-daygrid .fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled) .fc-daygrid-day-frame {
 	background: hsl(var(--primary) / 0.15);
 	border: 2px solid hsl(var(--primary) / 0.5);
 	box-shadow: 0 2px 8px hsl(var(--primary) / 0.2);
 }
 
-.fc-multimonth
-	.fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled)
-	.fc-daygrid-day-number,
-.fc-daygrid
-	.fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled)
-	.fc-daygrid-day-number {
+.fc-multimonth .fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled) .fc-daygrid-day-number,
+.fc-daygrid .fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled) .fc-daygrid-day-number {
 	color: hsl(var(--primary));
 	font-weight: 700;
 }
@@ -235,13 +214,8 @@
 }
 
 /* Dark mode today frame - enhanced gradient */
-.dark .fc-multimonth
-	.fc-daygrid-day.fc-day-today:not(.fc-day-past)
-	.fc-daygrid-day-frame,
-.dark
-	.fc-daygrid
-	.fc-daygrid-day.fc-day-today:not(.fc-day-past)
-	.fc-daygrid-day-frame {
+.dark .fc-multimonth .fc-daygrid-day.fc-day-today:not(.fc-day-past) .fc-daygrid-day-frame,
+.dark .fc-daygrid .fc-daygrid-day.fc-day-today:not(.fc-day-past) .fc-daygrid-day-frame {
 	background: linear-gradient(
 		135deg,
 		hsl(var(--primary) / 0.2) 0%,

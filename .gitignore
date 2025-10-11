@@ -108,3 +108,4 @@ node_modules
 
 data/
 app/frontend/.prettiercache
+app/frontend/tsconfig.tsbuildinfo

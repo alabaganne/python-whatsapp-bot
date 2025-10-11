@@ -6,12 +6,13 @@ import { Button } from "@ui/button";
 import { useTheme } from "next-themes";
 import * as React from "react";
 import { requestDocumentLoad } from "@/processes/documents";
-import { TEMPLATE_USER_WA_ID, toSceneFromDoc } from "@/shared/libs/documents";
-import { computeSceneSignature } from "@/shared/libs/documents/scene-utils";
+import { fetchCustomer } from "@/shared/libs/api";
+import { TEMPLATE_USER_WA_ID } from "@/shared/libs/documents";
 import { useLanguage } from "@/shared/libs/state/language-context";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/shared/ui/sheet";
 import { DocumentCanvas } from "@/widgets/document-canvas/DocumentCanvas";
-import { useDocumentScene } from "@/widgets/document-canvas/hooks/use-document-scene";
+// reuse the same dual-canvas behavior as documents page
+import { useDualCanvas } from "@/widgets/document-canvas/hooks/use-dual-canvas";
 import { DocumentSavingIndicator } from "./DocumentSavingIndicator";
 
 interface DefaultDocumentDrawerProps {
@@ -32,360 +33,133 @@ export function DefaultDocumentDrawer({
 	const [open, setOpen] = React.useState(false);
 	const { resolvedTheme } = useTheme();
 	const { locale } = useLanguage();
-	const [scene, setScene] = React.useState<{
-		elements?: unknown[];
-		appState?: Record<string, unknown>;
-		files?: Record<string, unknown>;
-	} | null>(null);
-	// Live scene for real-time viewer mirror (updates on every editor change)
-	const [liveScene, setLiveScene] = React.useState<{
-		elements?: unknown[];
-		appState?: Record<string, unknown>;
-		files?: Record<string, unknown>;
-	} | null>(null);
+	// scenes provided by useDualCanvas
 	const [loading, setLoading] = React.useState(false);
 	const [isLoaded, setIsLoaded] = React.useState(false);
 
 	const themeMode = resolvedTheme === "dark" ? "dark" : "light";
 
-	// Ref to track viewer's current camera state for saving
-	const viewerCameraRef = React.useRef<Record<string, unknown>>({});
-	// Ref to track last viewer camera signature to avoid redundant saves
-	const lastViewerCameraSigRef = React.useRef<string>("");
+	// state managed by useDualCanvas
 
-	// Track if we're expecting initial load
-	// After initial load, editor becomes write-only to prevent remounting during edits
-	const pendingInitialLoadRef = React.useRef<boolean>(false);
-
-	// Signatures to avoid redundant scene re-applies that can cause flicker
-	const editorSigRef = React.useRef<string | null>(null);
-	const viewerSigRef = React.useRef<string | null>(null);
-
-	// Debug log when scene changes
-	React.useEffect(() => {
-		console.log("[DefaultDocumentDrawer] Scene state changed:", scene, "elements:", scene?.elements?.length);
-	}, [scene]);
+	// No debug logs
 
 	// Use the template user's document for autosave, gated by drawer open + loaded
 	const {
+		scene,
+		liveScene,
+		handleViewerCanvasChange,
+		handleCanvasChange,
+		onApiReadyWithApply,
+		onViewerApiReady,
 		saveStatus,
-		handleCanvasChange: originalHandleCanvasChange,
-		onExcalidrawAPI,
 		loading: hookLoading,
-	} = useDocumentScene(TEMPLATE_USER_WA_ID, {
-		enabled: true,
+		flushNow,
+	} = useDualCanvas({
+		waId: TEMPLATE_USER_WA_ID,
+		theme: themeMode,
 		isUnlocked: open && isLoaded,
-		autoLoadOnMount: false,
+		initialLoadActive: !isLoaded,
 	});
 
-	// Use ref to track current scene for comparison without re-subscribing
-	const sceneRef = React.useRef(scene);
-	React.useEffect(() => {
-		sceneRef.current = scene;
-	}, [scene]);
-
 	// DRY: Common logic for applying scene updates during initial load only
-	const applySceneIfInitialLoad = React.useCallback(
-		(
-			source: string,
-			sceneData:
-				| {
-						elements?: unknown[];
-						appState?: Record<string, unknown>;
-						files?: Record<string, unknown>;
-						viewerAppState?: Record<string, unknown>;
-						editorAppState?: Record<string, unknown>;
-				  }
-				| null
-				| undefined
-		) => {
-			if (!sceneData) return;
-
-			const sig = computeSceneSignature(
-				(sceneData?.elements as unknown[]) || [],
-				(sceneData?.appState as Record<string, unknown>) || {},
-				(sceneData?.files as Record<string, unknown>) || {}
-			);
-
-			// Only update editor during initial load
-			const isPendingInitialLoad = pendingInitialLoadRef.current;
-			const hasElements = Array.isArray(sceneData.elements) && sceneData.elements.length > 0;
-
-			if (isPendingInitialLoad && sig && sig !== editorSigRef.current) {
-				// Only mark as loaded if we received actual content
-				if (hasElements) {
-					console.log(
-						`[DefaultDocumentDrawer] 📥 Initial load from ${source}, updating both canvases (elements=${sceneData.elements?.length || 0})`
-					);
-					editorSigRef.current = sig;
-					setScene(sceneData);
-					viewerSigRef.current = sig;
-
-					// Load viewer's saved camera or use empty state
-					const viewerCamera = sceneData.viewerAppState || {};
-					viewerCameraRef.current = viewerCamera;
-
-					// Initialize viewer camera signature from loaded data
-					const zoomValue = (viewerCamera.zoom as { value?: number })?.value ?? 1;
-					const scrollX = (viewerCamera.scrollX as number) ?? 0;
-					const scrollY = (viewerCamera.scrollY as number) ?? 0;
-					const camera = {
-						zoom: Math.round(zoomValue * 1000) / 1000,
-						scrollX: Math.round(scrollX),
-						scrollY: Math.round(scrollY),
-					};
-					lastViewerCameraSigRef.current = JSON.stringify(camera);
-					console.log(
-						`[DefaultDocumentDrawer] 📷 Initialized viewer camera sig=${lastViewerCameraSigRef.current.slice(0, 30)}...`
-					);
-
-					setLiveScene({
-						elements: sceneData.elements || [],
-						appState: viewerCamera,
-						files: sceneData.files || {},
-					});
-					// Mark as loaded
-					pendingInitialLoadRef.current = false;
-				} else {
-					console.log(
-						`[DefaultDocumentDrawer] ⏭️ Ignoring empty ${source} (waiting for content, elements=${sceneData.elements?.length || 0})`
-					);
-				}
-			} else if (!isPendingInitialLoad) {
-				console.log(`[DefaultDocumentDrawer] ⏭️ Ignoring ${source} (editor write-only after initial load)`);
-			}
-		},
-		[]
-	);
+	// handled by useDualCanvas
 
 	// Debug: log when saveStatus changes
 	React.useEffect(() => {
-		console.log("[DefaultDocumentDrawer] Save status changed:", saveStatus);
-	}, [saveStatus]);
+		// Removed debug logs for production
+	}, []);
 
-	// Callback for viewer canvas changes (to track viewer camera)
-	const handleViewerCanvasChange = React.useCallback(
-		(_elements: unknown[], appState: Record<string, unknown>, _files: Record<string, unknown>) => {
-			// Compute stable signature for viewer camera (only zoom/scroll values)
-			// Round to avoid floating-point precision issues
-			const zoomValue = (appState.zoom as { value?: number })?.value ?? 1;
-			const scrollX = (appState.scrollX as number) ?? 0;
-			const scrollY = (appState.scrollY as number) ?? 0;
+	// Viewer canvas changes handled by useDualCanvas
 
-			const camera = {
-				zoom: Math.round(zoomValue * 1000) / 1000,
-				scrollX: Math.round(scrollX),
-				scrollY: Math.round(scrollY),
-			};
-			const newSig = JSON.stringify(camera);
-
-			// Only trigger autosave if camera signature actually changed
-			if (newSig === lastViewerCameraSigRef.current) {
-				return; // No change, skip
-			}
-
-			console.log(
-				`[DefaultDocumentDrawer] 📷 Viewer camera changed: old=${lastViewerCameraSigRef.current.slice(0, 30)}... new=${newSig.slice(0, 30)}...`
-			);
-
-			// Update refs
-			viewerCameraRef.current = appState;
-			lastViewerCameraSigRef.current = newSig;
-
-			// Trigger autosave with current editor state + new viewer camera
-			try {
-				const currentScene = sceneRef.current;
-				if (currentScene?.elements && open && isLoaded) {
-					// Extract editor's camera from current scene
-					const editorCamera = currentScene.appState
-						? {
-								zoom: currentScene.appState.zoom,
-								scrollX: currentScene.appState.scrollX,
-								scrollY: currentScene.appState.scrollY,
-							}
-						: undefined;
-
-					originalHandleCanvasChange(
-						currentScene.elements as unknown[],
-						currentScene.appState || {},
-						currentScene.files || {},
-						viewerCameraRef.current,
-						editorCamera
-					);
-				}
-			} catch (err) {
-				console.error("[DefaultDocumentDrawer] Error triggering save for viewer camera:", err);
-			}
-		},
-		[originalHandleCanvasChange, open, isLoaded]
-	);
-
-	// Wrap handleCanvasChange to update live viewer scene in real-time
-	// Only mirror elements and files, not viewport/panning (appState)
-	const handleCanvasChange = React.useCallback(
-		(elements: unknown[], appState: Record<string, unknown>, files: Record<string, unknown>) => {
-			// Update live scene with elements and files only
-			// Preserve viewer's independent viewport by not updating appState
-			setLiveScene((prev) => ({
-				elements,
-				appState: prev?.appState || {}, // Keep viewer's viewport
-				files,
-			}));
-
-			// Extract editor's camera state for explicit tracking
-			const editorCamera = {
-				zoom: appState.zoom,
-				scrollX: appState.scrollX,
-				scrollY: appState.scrollY,
-			};
-
-			// Call original handler for autosave logic with both cameras
-			originalHandleCanvasChange(elements, appState, files, viewerCameraRef.current, editorCamera);
-		},
-		[originalHandleCanvasChange]
-	);
+	// Editor handler provided by hook
 
 	// Debug: log canvas changes
-	const handleCanvasChangeWithLog = React.useCallback(
-		(elements: readonly unknown[], appState: unknown, files: unknown) => {
-			console.log(
-				"[DefaultDocumentDrawer] Canvas changed:",
-				"elements:",
-				(elements as unknown[]).length,
-				"appState:",
-				appState
-			);
-			handleCanvasChange(
-				elements as unknown[] as unknown[],
-				appState as Record<string, unknown>,
-				files as Record<string, unknown>
-			);
-		},
-		[handleCanvasChange]
-	);
+	// Removed wrapper; use hook-provided handler directly
 
 	// Ensure initial scene is applied as soon as Excalidraw API is ready
-	const onApiReadyWithApply = React.useCallback(
-		(api: unknown) => {
-			try {
-				(onExcalidrawAPI as unknown as (a: unknown) => void)(api);
-				const current = sceneRef.current;
-				if (current) {
-					// Defer scene application to a microtask + rAF to avoid flushSync during render
-					Promise.resolve().then(() => {
-						try {
-							requestAnimationFrame(() => {
-								try {
-									(
-										api as unknown as {
-											updateScene?: (s: Record<string, unknown>) => void;
-										}
-									)?.updateScene?.({
-										...current,
-										appState: {
-											...(current.appState || {}),
-											viewModeEnabled: false,
-											zenModeEnabled: false,
-											theme: themeMode,
-										},
-									});
-								} catch {}
-							});
-						} catch {}
-					});
-				}
-			} catch {}
-		},
-		[onExcalidrawAPI, themeMode]
-	);
+	// onApiReady provided by hook
 
 	// Listen for document updates from WebSocket - ONLY apply during initial load
 	// After initial load, editor becomes write-only to prevent remounting during edits
-	React.useEffect(() => {
-		const onExternal = (e: Event) => {
-			try {
-				const detail = (e as CustomEvent).detail as {
-					wa_id?: string;
-					document?: Record<string, unknown> | null;
-				};
-				if (String(detail?.wa_id || "") !== TEMPLATE_USER_WA_ID) return;
-
-				const sceneData = toSceneFromDoc(detail?.document || null);
-				applySceneIfInitialLoad("WebSocket", sceneData);
-			} catch (error) {
-				console.error("[DefaultDocumentDrawer] Error in external-update:", error);
-			}
-		};
-		window.addEventListener("documents:external-update", onExternal as unknown as EventListener);
-		return () => {
-			window.removeEventListener("documents:external-update", onExternal as unknown as EventListener);
-		};
-	}, [applySceneIfInitialLoad]);
+	// External updates handled by useDualCanvas
 
 	// When the hook broadcasts that a scene was applied - ONLY apply during initial load
+	// mark loaded when scene applied for template user
 	React.useEffect(() => {
 		const onApplied = (e: Event) => {
 			try {
-				const detail = (e as CustomEvent).detail as {
-					wa_id?: string;
-					scene?: {
-						elements?: unknown[];
-						appState?: Record<string, unknown>;
-						files?: Record<string, unknown>;
-						viewerAppState?: Record<string, unknown>;
-						editorAppState?: Record<string, unknown>;
-					} | null;
-				};
+				const detail = (e as CustomEvent).detail as { wa_id?: string };
 				if (String(detail?.wa_id || "") !== TEMPLATE_USER_WA_ID) return;
-
-				applySceneIfInitialLoad("hook", detail?.scene);
-
 				setIsLoaded(true);
 				setLoading(false);
 			} catch {}
 		};
 		window.addEventListener("documents:sceneApplied", onApplied as unknown as EventListener);
 		return () => window.removeEventListener("documents:sceneApplied", onApplied as unknown as EventListener);
-	}, [applySceneIfInitialLoad]);
+	}, []);
 
 	// Load template document when drawer opens (always request fresh snapshot)
 	React.useEffect(() => {
-		if (open) {
-			console.log(
-				"[DefaultDocumentDrawer] Drawer opened, marking as pending initial load and requesting template:",
-				TEMPLATE_USER_WA_ID
-			);
-			// Mark as pending initial load
-			pendingInitialLoadRef.current = true;
-			// Reset camera tracking
-			lastViewerCameraSigRef.current = "";
-			viewerCameraRef.current = {};
+		if (!open) return;
+		try {
+			(globalThis as { __docIgnoreChangesUntil?: number }).__docIgnoreChangesUntil = Date.now() + 1500;
+		} catch {}
+		setIsLoaded(false);
+		setLoading(true);
+
+		// Mark REST in-flight so hooks can coalesce with WS
+		(globalThis as { __docRestInFlight?: boolean }).__docRestInFlight = true;
+
+		// Kick off REST fetch immediately to get the latest template snapshot
+		void (async () => {
+			try {
+				const resp = (await fetchCustomer(TEMPLATE_USER_WA_ID)) as unknown as {
+					data?: { document?: unknown };
+				};
+				const restDocument = (resp?.data?.document || null) as Record<string, unknown> | null;
+				// Clear in-flight marker before broadcasting
+				(globalThis as { __docRestInFlight?: boolean }).__docRestInFlight = false;
+				if (restDocument) {
+					// Dispatch external-update so useDualCanvas/useDocumentScene can apply
+					window.dispatchEvent(
+						new CustomEvent("documents:external-update", {
+							detail: {
+								wa_id: TEMPLATE_USER_WA_ID,
+								document: restDocument,
+							},
+						})
+					);
+				}
+			} catch {
+				// Ensure marker is cleared even on error
+				(globalThis as { __docRestInFlight?: boolean }).__docRestInFlight = false;
+			}
+		})();
+
+		// Also request via WebSocket; reducer will broadcast external-update
+		requestDocumentLoad(TEMPLATE_USER_WA_ID).catch(() => {});
+	}, [open]);
+
+	// When closing, keep scene but lock saves
+	React.useEffect(() => {
+		if (!open) {
 			setIsLoaded(false);
-			setLoading(true);
-			requestDocumentLoad(TEMPLATE_USER_WA_ID).then((result) => {
-				console.log("[DefaultDocumentDrawer] requestDocumentLoad result:", result);
-			});
 		}
 	}, [open]);
 
-	// Debug: log when drawer opens/closes
-	React.useEffect(() => {
-		console.log(
-			"[DefaultDocumentDrawer] Drawer state changed:",
-			open ? "OPEN" : "CLOSED",
-			"scene elements:",
-			scene?.elements?.length
-		);
-
-		// When closing, keep scene but lock saves
-		if (!open) {
-			console.log("[DefaultDocumentDrawer] Drawer closing, preserving scene (locking saves)");
-			setIsLoaded(false);
-		}
-	}, [open, scene?.elements?.length]);
-
 	return (
-		<Sheet open={open} onOpenChange={setOpen}>
+		<Sheet
+			open={open}
+			onOpenChange={(v) => {
+				try {
+					if (!v) {
+						// Best-effort flush on close
+						flushNow?.();
+					}
+				} catch {}
+				setOpen(v);
+			}}
+		>
 			{trigger ? (
 				React.isValidElement(trigger) ? (
 					<SheetTrigger asChild>{trigger}</SheetTrigger>
@@ -438,8 +212,20 @@ export function DefaultDocumentDrawer({
 								theme={themeMode}
 								langCode={locale || "en"}
 								onChange={handleViewerCanvasChange as unknown as ExcalidrawProps["onChange"]}
-								onApiReady={() => {}}
-								{...(liveScene ? { scene: liveScene } : {})}
+								onApiReady={onViewerApiReady}
+								{...(liveScene
+									? {
+											scene: {
+												elements: [...(((liveScene.elements as unknown[]) || []) as unknown[])],
+												appState: {
+													...((liveScene.appState || {}) as Record<string, unknown>),
+												},
+												files: {
+													...((liveScene.files || {}) as Record<string, unknown>),
+												},
+											},
+										}
+									: {})}
 								viewModeEnabled={true}
 								zenModeEnabled={true}
 								scrollable={false}
@@ -469,9 +255,21 @@ export function DefaultDocumentDrawer({
 							<DocumentCanvas
 								theme={themeMode}
 								langCode={locale || "en"}
-								onChange={handleCanvasChangeWithLog as unknown as ExcalidrawProps["onChange"]}
+								onChange={handleCanvasChange as unknown as ExcalidrawProps["onChange"]}
 								onApiReady={onApiReadyWithApply}
-								{...(scene ? { scene } : {})}
+								{...(scene
+									? {
+											scene: {
+												elements: [...(((scene.elements as unknown[]) || []) as unknown[])],
+												appState: {
+													...((scene.appState || {}) as Record<string, unknown>),
+												},
+												files: {
+													...((scene.files || {}) as Record<string, unknown>),
+												},
+											},
+										}
+									: {})}
 								viewModeEnabled={false}
 								zenModeEnabled={false}
 								scrollable={false}

@@ -51,20 +51,13 @@
 }
 
 /* Future days default gradient */
-.fc-multimonth .fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(
-		.vacation-day
-	):not(.fc-day-disabled)
+.fc-multimonth
+	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(.vacation-day):not(.fc-day-disabled)
 	.fc-daygrid-day-frame,
 .fc-daygrid
-	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(.vacation-day):not(
-		.fc-day-disabled
-	)
+	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(.vacation-day):not(.fc-day-disabled)
 	.fc-daygrid-day-frame {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--card)) 0%,
-		hsl(var(--card) / 0.95) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
 }
 
 /* Fix day events container to allow more link overflow - minimal overrides only */

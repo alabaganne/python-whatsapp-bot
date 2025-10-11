@@ -26,32 +26,28 @@
    ================================================================= */
 
 /* Free roam mode: Cancelled events look like normal events but darker with stroke */
-body[data-free-roam="true"]
-.fc-event.reservation-cancelled:not(.fc-list-event) {
+body[data-free-roam="true"] .fc-event.reservation-cancelled:not(.fc-list-event) {
 	/* Use normal event colors based on type, but make them darker */
 	filter: brightness(0.7) saturate(0.8);
 	opacity: 0.9;
 }
 
 /* Free roam mode: Cancelled check-up events (type 0) - darker green */
-body[data-free-roam="true"]
-.fc-event.reservation-cancelled.reservation-type-0:not(.fc-list-event) {
+body[data-free-roam="true"] .fc-event.reservation-cancelled.reservation-type-0:not(.fc-list-event) {
 	/* Preserve typed colors; only darken */
 	filter: brightness(0.7) saturate(0.8);
 	opacity: 0.9;
 }
 
 /* Free roam mode: Cancelled follow-up events (type 1) - darker blue */
-body[data-free-roam="true"]
-.fc-event.reservation-cancelled.reservation-type-1:not(.fc-list-event) {
+body[data-free-roam="true"] .fc-event.reservation-cancelled.reservation-type-1:not(.fc-list-event) {
 	/* Preserve typed colors; only darken */
 	filter: brightness(0.7) saturate(0.8);
 	opacity: 0.9;
 }
 
 /* Free roam mode: Cancelled conversation events - darker orange */
-body[data-free-roam="true"]
-.fc-event.reservation-cancelled.conversation-event:not(.fc-list-event) {
+body[data-free-roam="true"] .fc-event.reservation-cancelled.conversation-event:not(.fc-list-event) {
 	background: #edae49;
 	border-color: #edae49;
 	color: hsl(var(--background));

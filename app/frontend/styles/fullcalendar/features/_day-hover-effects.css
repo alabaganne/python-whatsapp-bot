@@ -20,11 +20,8 @@
    ================================================================= */
 
 /* Special hover for today (lowest specificity) */
-.fc-multimonth .fc-daygrid-day.fc-day-today:not(.fc-day-past):hover
-	.fc-daygrid-day-frame,
-.fc-daygrid
-	.fc-daygrid-day.fc-day-today:not(.fc-day-past):hover
-	.fc-daygrid-day-frame {
+.fc-multimonth .fc-daygrid-day.fc-day-today:not(.fc-day-past):hover .fc-daygrid-day-frame,
+.fc-daygrid .fc-daygrid-day.fc-day-today:not(.fc-day-past):hover .fc-daygrid-day-frame {
 	background: hsl(var(--accent) / 0.35);
 	transform: translateY(-2px);
 	border-color: hsl(var(--accent) / 0.7);
@@ -33,25 +30,21 @@
 }
 
 /* Active/pressed day cell styling (low specificity) */
-.fc-multimonth .fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):active
-	.fc-daygrid-day-frame,
-.fc-daygrid
-	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):active
-	.fc-daygrid-day-frame {
+.fc-multimonth .fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):active .fc-daygrid-day-frame,
+.fc-daygrid .fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):active .fc-daygrid-day-frame {
 	transform: translateY(0);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 	border-radius: calc(var(--radius) * 0.75);
 }
 
 /* Special hover for selected/highlighted dates (medium specificity) */
-.fc-multimonth .fc-daygrid
+.fc-multimonth
+	.fc-daygrid
 	.fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled):hover
 	.fc-daygrid-day-frame,
 .fc-multimonth
 	.fc-daygrid
-	.fc-daygrid-day:has(.fc-highlight):not(.fc-day-past):not(
-		.fc-day-disabled
-	):hover
+	.fc-daygrid-day:has(.fc-highlight):not(.fc-day-past):not(.fc-day-disabled):hover
 	.fc-daygrid-day-frame,
 .fc-daygrid
 	.fc-daygrid
@@ -59,9 +52,7 @@
 	.fc-daygrid-day-frame,
 .fc-daygrid
 	.fc-daygrid
-	.fc-daygrid-day:has(.fc-highlight):not(.fc-day-past):not(
-		.fc-day-disabled
-	):hover
+	.fc-daygrid-day:has(.fc-highlight):not(.fc-day-past):not(.fc-day-disabled):hover
 	.fc-daygrid-day-frame {
 	background: hsl(var(--primary) / 0.3);
 	border-color: hsl(var(--primary) / 0.7);
@@ -70,20 +61,17 @@
 }
 
 /* Enhanced day cell hover - smooth transform and shadow effects (highest specificity) */
-.fc-multimonth .fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(
-		.fc-day-today
-	):not(.fc-day-selected):not(:has(.fc-highlight)):hover
+.fc-multimonth
+	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(.fc-day-today):not(.fc-day-selected):not(
+		:has(.fc-highlight)
+	):hover
 	.fc-daygrid-day-frame,
 .fc-daygrid
-	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(
-		.fc-day-today
-	):not(.fc-day-selected):not(:has(.fc-highlight)):hover
+	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(.fc-day-today):not(.fc-day-selected):not(
+		:has(.fc-highlight)
+	):hover
 	.fc-daygrid-day-frame {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--muted) / 0.15) 0%,
-		hsl(var(--muted) / 0.25) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--muted) / 0.15) 0%, hsl(var(--muted) / 0.25) 100%);
 	border-color: hsl(var(--muted) / 0.4);
 	border-radius: calc(var(--radius) * 0.75);
 	transform: translateY(-3px) scale(1.02);
@@ -100,46 +88,31 @@
    ================================================================= */
 
 /* Special hover for today's number (lowest specificity) */
-.fc-multimonth .fc-daygrid-day.fc-day-today:not(.fc-day-past):hover
-	.fc-daygrid-day-number,
-.fc-daygrid
-	.fc-daygrid-day.fc-day-today:not(.fc-day-past):hover
-	.fc-daygrid-day-number {
+.fc-multimonth .fc-daygrid-day.fc-day-today:not(.fc-day-past):hover .fc-daygrid-day-number,
+.fc-daygrid .fc-daygrid-day.fc-day-today:not(.fc-day-past):hover .fc-daygrid-day-number {
 	background: hsl(var(--accent) / 0.45);
 	color: hsl(var(--accent-foreground));
 }
 
 /* Special hover for selected/highlighted day numbers (medium specificity) */
-.fc-multimonth .fc-daygrid-day.fc-day-selected:not(.fc-day-disabled):not(
-		.fc-day-past
-	):hover
-	.fc-daygrid-day-number,
-.fc-multimonth
-	.fc-daygrid-day:has(.fc-highlight):not(.fc-day-disabled):not(
-		.fc-day-past
-	):hover
-	.fc-daygrid-day-number,
-.fc-daygrid
-	.fc-daygrid-day.fc-day-selected:not(.fc-day-disabled):not(.fc-day-past):hover
-	.fc-daygrid-day-number,
-.fc-daygrid
-	.fc-daygrid-day:has(.fc-highlight):not(.fc-day-disabled):not(
-		.fc-day-past
-	):hover
-	.fc-daygrid-day-number {
+.fc-multimonth .fc-daygrid-day.fc-day-selected:not(.fc-day-disabled):not(.fc-day-past):hover .fc-daygrid-day-number,
+.fc-multimonth .fc-daygrid-day:has(.fc-highlight):not(.fc-day-disabled):not(.fc-day-past):hover .fc-daygrid-day-number,
+.fc-daygrid .fc-daygrid-day.fc-day-selected:not(.fc-day-disabled):not(.fc-day-past):hover .fc-daygrid-day-number,
+.fc-daygrid .fc-daygrid-day:has(.fc-highlight):not(.fc-day-disabled):not(.fc-day-past):hover .fc-daygrid-day-number {
 	background: hsl(var(--primary) / 0.4);
 	color: hsl(var(--primary-foreground));
 }
 
 /* Hover effect for day numbers (highest specificity) */
-.fc-multimonth .fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past):not(
-		.fc-day-today
-	):not(.fc-day-selected):not(:has(.fc-highlight)):hover
+.fc-multimonth
+	.fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past):not(.fc-day-today):not(.fc-day-selected):not(
+		:has(.fc-highlight)
+	):hover
 	.fc-daygrid-day-number,
 .fc-daygrid
-	.fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past):not(
-		.fc-day-today
-	):not(.fc-day-selected):not(:has(.fc-highlight)):hover
+	.fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past):not(.fc-day-today):not(.fc-day-selected):not(
+		:has(.fc-highlight)
+	):hover
 	.fc-daygrid-day-number {
 	background: hsl(var(--muted) / 0.3);
 	color: hsl(var(--muted-foreground));
@@ -161,16 +134,17 @@
    ================================================================= */
 
 /* Enhanced dark mode hover effects (must come after base hover styles) */
-.dark .fc-multimonth
-	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(
-		.fc-day-today
-	):not(.fc-day-selected):not(:has(.fc-highlight)):hover
+.dark
+	.fc-multimonth
+	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(.fc-day-today):not(.fc-day-selected):not(
+		:has(.fc-highlight)
+	):hover
 	.fc-daygrid-day-frame,
 .dark
 	.fc-daygrid
-	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(
-		.fc-day-today
-	):not(.fc-day-selected):not(:has(.fc-highlight)):hover
+	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(.fc-day-today):not(.fc-day-selected):not(
+		:has(.fc-highlight)
+	):hover
 	.fc-daygrid-day-frame {
 	transform: translateY(-3px) scale(1.02);
 	box-shadow:

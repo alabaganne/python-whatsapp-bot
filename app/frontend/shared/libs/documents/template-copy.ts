@@ -7,6 +7,9 @@
 import { fetchCustomer, saveCustomerDocument } from "@/shared/libs/api";
 import { TEMPLATE_USER_WA_ID } from "./default-document";
 
+// Deduplicate concurrent initialization attempts per waId
+const initInFlight = new Map<string, Promise<boolean>>();
+
 /**
  * Checks if a user's document has been initialized.
  * A document is considered initialized if:
@@ -104,19 +107,31 @@ export async function ensureDocumentInitialized(waId: string): Promise<boolean> 
 		return true;
 	}
 
-	const initialized = await isDocumentInitialized(waId);
+	// Coalesce concurrent callers
+	const existing = initInFlight.get(waId);
+	if (existing) return existing;
 
-	if (initialized) {
-		console.log(`[TemplateInit] Document already initialized for waId=${waId}`);
-		return true;
+	const task = (async (): Promise<boolean> => {
+		const initialized = await isDocumentInitialized(waId);
+
+		if (initialized) {
+			console.log(`[TemplateInit] Document already initialized for waId=${waId}`);
+			return true;
+		}
+
+		console.log(`[TemplateInit] Document not initialized, copying template for waId=${waId}`);
+		const copied = await copyTemplateToUser(waId);
+
+		if (!copied) {
+			console.warn(`[TemplateInit] Failed to copy template for waId=${waId}`);
+		}
+		return copied;
+	})();
+
+	initInFlight.set(waId, task);
+	try {
+		return await task;
+	} finally {
+		initInFlight.delete(waId);
 	}
-
-	console.log(`[TemplateInit] Document not initialized, copying template for waId=${waId}`);
-	const copied = await copyTemplateToUser(waId);
-
-	if (!copied) {
-		console.warn(`[TemplateInit] Failed to copy template for waId=${waId}`);
-	}
-
-	return copied;
 }

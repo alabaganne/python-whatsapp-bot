@@ -277,13 +277,8 @@
  */
 
 /* Dark mode vacation styling for better visibility */
-.dark .fc-multimonth
-	.fc-daygrid-day.vacation-day:not(.fc-day-past)
-	.fc-daygrid-day-frame,
-.dark
-	.fc-daygrid
-	.fc-daygrid-day.vacation-day:not(.fc-day-past)
-	.fc-daygrid-day-frame {
+.dark .fc-multimonth .fc-daygrid-day.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame,
+.dark .fc-daygrid .fc-daygrid-day.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame {
 	opacity: 0.9;
 }
 
@@ -329,40 +324,24 @@
  */
 
 /* Frame styling override - matches today frame specificity */
-:where(
-		.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past)
-			.fc-daygrid-day-frame
-	) {
+:where(.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame) {
 	background: hsl(var(--destructive) / 0.2);
 	background-image: none;
 }
 
 /* Multimonth frame styling override - highest specificity */
-.fc-multimonth
-:where(
-	.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past)
-		.fc-daygrid-day-frame
-) {
+.fc-multimonth :where(.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame) {
 	background: hsl(var(--destructive) / 0.2);
 	background-image: none;
 }
 
 /* Dark mode overrides */
-.dark
-:where(
-	.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past)
-		.fc-daygrid-day-frame
-) {
+.dark :where(.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame) {
 	background: hsl(var(--destructive) / 0.3);
 	background-image: none;
 }
 
-.dark
-	.fc-multimonth
-	:where(
-		.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past)
-			.fc-daygrid-day-frame
-	) {
+.dark .fc-multimonth :where(.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame) {
 	background: hsl(var(--destructive) / 0.3);
 	background-image: none;
 }
@@ -405,16 +384,8 @@
 
 	/* High-density micro pattern for tiny legend swatches */
 	--vacation-pattern-legend:
-		repeating-linear-gradient(
-			45deg,
-			rgba(75, 85, 99, 0.35) 0 1px,
-			transparent 1px 2px
-		),
-		repeating-linear-gradient(
-			-45deg,
-			rgba(75, 85, 99, 0.25) 0 1px,
-			transparent 1px 2px
-		);
+		repeating-linear-gradient(45deg, rgba(75, 85, 99, 0.35) 0 1px, transparent 1px 2px),
+		repeating-linear-gradient(-45deg, rgba(75, 85, 99, 0.25) 0 1px, transparent 1px 2px);
 }
 
 .dark {
@@ -450,16 +421,8 @@
 
 	/* Dark-mode micro pattern for tiny legend swatches */
 	--vacation-pattern-legend:
-		repeating-linear-gradient(
-			45deg,
-			rgba(255, 255, 255, 0.6) 0 1px,
-			transparent 1px 2px
-		),
-		repeating-linear-gradient(
-			-45deg,
-			rgba(255, 255, 255, 0.45) 0 1px,
-			transparent 1px 2px
-		);
+		repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.6) 0 1px, transparent 1px 2px),
+		repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.45) 0 1px, transparent 1px 2px);
 }
 
 /* Apply pattern to vacation day cells */
@@ -502,39 +465,22 @@
 }
 
 /* Ensure 'today' on vacation also shows the pattern */
-.fc-daygrid
-:where(
-	.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past)
-		.fc-daygrid-day-frame
-) {
+.fc-daygrid :where(.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame) {
 	background-image: var(--vacation-pattern);
 	background-color: transparent;
 }
 
-.fc-multimonth
-	:where(
-		.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past)
-			.fc-daygrid-day-frame
-	) {
+.fc-multimonth :where(.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame) {
 	background-image: var(--vacation-pattern);
 	background-color: transparent;
 }
 
-.dark
-	:where(
-		.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past)
-			.fc-daygrid-day-frame
-	) {
+.dark :where(.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame) {
 	background-image: var(--vacation-pattern);
 	background-color: transparent;
 }
 
-.dark
-	.fc-multimonth
-	:where(
-		.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past)
-			.fc-daygrid-day-frame
-	) {
+.dark .fc-multimonth :where(.fc-daygrid-day.fc-day-today.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame) {
 	background-image: var(--vacation-pattern);
 	background-color: transparent;
 }

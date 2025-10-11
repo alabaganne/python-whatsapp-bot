@@ -57,16 +57,12 @@ export async function GET() {
 		return NextResponse.json(
 			{
 				success: false,
-				message:
-					(lastError as Error | undefined)?.message || "Metrics fetch failed",
+				message: (lastError as Error | undefined)?.message || "Metrics fetch failed",
 				data: {},
 			},
-			{ status: 500 },
+			{ status: 500 }
 		);
 	} catch (error) {
-		return NextResponse.json(
-			{ success: false, message: (error as Error).message, data: {} },
-			{ status: 500 },
-		);
+		return NextResponse.json({ success: false, message: (error as Error).message, data: {} }, { status: 500 });
 	}
 }

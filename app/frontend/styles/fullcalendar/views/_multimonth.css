@@ -132,9 +132,7 @@
 	border-right-style: hidden;
 }
 
-.fc-multimonth-singlecol
-	.fc-multimonth-month:last-child
-	.fc-multimonth-daygrid-table {
+.fc-multimonth-singlecol .fc-multimonth-month:last-child .fc-multimonth-daygrid-table {
 	border-bottom-style: hidden;
 }
 

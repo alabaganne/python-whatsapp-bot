@@ -7,13 +7,11 @@ import { WebSocketService } from "@/services/websocket/websocket.service";
 
 export async function requestDocumentLoad(waId: string): Promise<boolean> {
 	try {
-		console.log(`[requestDocumentLoad] 📡 Requesting document via WS: waId=${waId}`);
 		const ws = new WebSocketService();
 		const ok = await ws.sendMessage({
 			type: "get_customer_document",
 			data: { wa_id: waId },
 		});
-		console.log(`[requestDocumentLoad] ${ok ? "✅" : "❌"} WS request ${ok ? "sent" : "failed"}: waId=${waId}`);
 		return Boolean(ok);
 	} catch (err) {
 		console.error(`[requestDocumentLoad] ❌ Error requesting document for waId=${waId}:`, err);

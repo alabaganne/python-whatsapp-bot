@@ -18,8 +18,7 @@
 	border-bottom: 1px solid hsl(var(--border));
 	border-top: 1px solid hsl(var(--background) / 0.8);
 	margin: 0;
-	border-radius: var(--fc-multimonth-radius, var(--radius))
-		var(--fc-multimonth-radius, var(--radius)) 0 0;
+	border-radius: var(--fc-multimonth-radius, var(--radius)) var(--fc-multimonth-radius, var(--radius)) 0 0;
 	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 	letter-spacing: 0.025em;
 	z-index: var(--z-fc-multimonth-header);

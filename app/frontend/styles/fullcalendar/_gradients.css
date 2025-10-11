@@ -19,33 +19,20 @@
 }
 
 /* Day backgrounds - gentle card tint for future days */
-.fc-daygrid .fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(
-		.fc-day-disabled
-	)
-	.fc-daygrid-day-frame {
+.fc-daygrid .fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(.fc-day-disabled) .fc-daygrid-day-frame {
 	background-image: var(--gradient-muted);
 }
 
 /* Today highlight - accent based gradient */
-.fc-daygrid .fc-daygrid-day.fc-day-today:not(.fc-day-past):not(.fc-day-disabled)
-	.fc-daygrid-day-frame,
+.fc-daygrid .fc-daygrid-day.fc-day-today:not(.fc-day-past):not(.fc-day-disabled) .fc-daygrid-day-frame,
 .fc .fc-day-today .fc-timegrid-col-frame {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--accent) / 0.18) 0%,
-		hsl(var(--accent) / 0.1) 60%,
-		transparent 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--accent) / 0.18) 0%, hsl(var(--accent) / 0.1) 60%, transparent 100%);
 	border-color: hsl(var(--accent) / 0.25);
 }
 
 /* Non-business background - soften with gradient */
 .fc .fc-non-business {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--muted) / 0.35) 0%,
-		hsl(var(--muted) / 0.25) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--muted) / 0.35) 0%, hsl(var(--muted) / 0.25) 100%);
 }
 
 /* Background events - use chart-3 gradient for differentiation */
@@ -55,33 +42,21 @@
 }
 
 /* H/V events - apply primary gradient backgrounds (but preserve typed overrides) */
-.fc-h-event:not(.reservation-type-0):not(.reservation-type-1):not(
-		.conversation-event
-	),
-.fc-v-event:not(.reservation-type-0):not(.reservation-type-1):not(
-		.conversation-event
-	) {
+.fc-h-event:not(.reservation-type-0):not(.reservation-type-1):not(.conversation-event),
+.fc-v-event:not(.reservation-type-0):not(.reservation-type-1):not(.conversation-event) {
 	background-image: var(--gradient-primary);
 	border-color: hsl(var(--primary));
 }
 
 /* Past events - muted gradient */
 .fc-event.fc-event-past {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--muted) / 0.6) 0%,
-		hsl(var(--muted) / 0.4) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--muted) / 0.6) 0%, hsl(var(--muted) / 0.4) 100%);
 	color: hsl(var(--muted-foreground));
 }
 
 /* Cancelled events - keep existing overrides and add subtle gradient */
 .fc-event[data-cancelled="true"] {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--destructive) / 0.35) 0%,
-		hsl(var(--destructive) / 0.25) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--destructive) / 0.35) 0%, hsl(var(--destructive) / 0.25) 100%);
 	border-color: hsl(var(--destructive));
 }
 

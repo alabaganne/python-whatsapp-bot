@@ -75,11 +75,7 @@
 		hsl(var(--accent) / 0.9) 45%,
 		hsl(var(--secondary)) 100%
 	);
-	--gradient-muted: linear-gradient(
-		135deg,
-		hsl(var(--muted) / 0.5) 0%,
-		hsl(var(--card)) 100%
-	);
+	--gradient-muted: linear-gradient(135deg, hsl(var(--muted) / 0.5) 0%, hsl(var(--card)) 100%);
 	--gradient-sidebar: linear-gradient(
 		135deg,
 		hsl(var(--sidebar-background)) 0%,
@@ -88,31 +84,11 @@
 	);
 
 	/* Chart gradients (used by charts and decorative blocks) */
-	--gradient-chart-1: linear-gradient(
-		135deg,
-		hsl(var(--chart-1)) 0%,
-		hsl(var(--chart-1) / 0.7) 100%
-	);
-	--gradient-chart-2: linear-gradient(
-		135deg,
-		hsl(var(--chart-2)) 0%,
-		hsl(var(--chart-2) / 0.7) 100%
-	);
-	--gradient-chart-3: linear-gradient(
-		135deg,
-		hsl(var(--chart-3)) 0%,
-		hsl(var(--chart-3) / 0.7) 100%
-	);
-	--gradient-chart-4: linear-gradient(
-		135deg,
-		hsl(var(--chart-4)) 0%,
-		hsl(var(--chart-4) / 0.7) 100%
-	);
-	--gradient-chart-5: linear-gradient(
-		135deg,
-		hsl(var(--chart-5)) 0%,
-		hsl(var(--chart-5) / 0.7) 100%
-	);
+	--gradient-chart-1: linear-gradient(135deg, hsl(var(--chart-1)) 0%, hsl(var(--chart-1) / 0.7) 100%);
+	--gradient-chart-2: linear-gradient(135deg, hsl(var(--chart-2)) 0%, hsl(var(--chart-2) / 0.7) 100%);
+	--gradient-chart-3: linear-gradient(135deg, hsl(var(--chart-3)) 0%, hsl(var(--chart-3) / 0.7) 100%);
+	--gradient-chart-4: linear-gradient(135deg, hsl(var(--chart-4)) 0%, hsl(var(--chart-4) / 0.7) 100%);
+	--gradient-chart-5: linear-gradient(135deg, hsl(var(--chart-5)) 0%, hsl(var(--chart-5) / 0.7) 100%);
 }
 
 /* Fancy toast styles (theme-aware) */
@@ -130,28 +106,12 @@
 	position: absolute;
 	inset: 0;
 	background-image:
-		linear-gradient(
-			to right,
-			hsl(var(--border) / 0.6) 0.0625rem,
-			transparent 0.0625rem
-		),
-		linear-gradient(
-			to bottom,
-			hsl(var(--border) / 0.6) 0.0625rem,
-			transparent 0.0625rem
-		);
+		linear-gradient(to right, hsl(var(--border) / 0.6) 0.0625rem, transparent 0.0625rem),
+		linear-gradient(to bottom, hsl(var(--border) / 0.6) 0.0625rem, transparent 0.0625rem);
 	background-size: 2rem 2rem;
 	opacity: 0.08;
-	-webkit-mask-image: radial-gradient(
-		ellipse 80% 80% at 100% 0%,
-		#000 50%,
-		transparent 90%
-	);
-	mask-image: radial-gradient(
-		ellipse 80% 80% at 100% 0%,
-		#000 50%,
-		transparent 90%
-	);
+	-webkit-mask-image: radial-gradient(ellipse 80% 80% at 100% 0%, #000 50%, transparent 90%);
+	mask-image: radial-gradient(ellipse 80% 80% at 100% 0%, #000 50%, transparent 90%);
 	z-index: 1;
 	pointer-events: none;
 }
@@ -159,26 +119,10 @@
 	position: absolute;
 	inset: 0;
 	background:
-		radial-gradient(
-			ellipse 120% 80% at 70% 20%,
-			hsl(var(--primary) / 0.15),
-			transparent 50%
-		),
-		radial-gradient(
-			ellipse 100% 60% at 30% 10%,
-			hsl(var(--accent) / 0.12),
-			transparent 60%
-		),
-		radial-gradient(
-			ellipse 90% 70% at 50% 0%,
-			hsl(var(--chart-4) / 0.18),
-			transparent 65%
-		),
-		radial-gradient(
-			ellipse 110% 50% at 80% 30%,
-			hsl(var(--secondary) / 0.08),
-			transparent 40%
-		), hsl(var(--card));
+		radial-gradient(ellipse 120% 80% at 70% 20%, hsl(var(--primary) / 0.15), transparent 50%),
+		radial-gradient(ellipse 100% 60% at 30% 10%, hsl(var(--accent) / 0.12), transparent 60%),
+		radial-gradient(ellipse 90% 70% at 50% 0%, hsl(var(--chart-4) / 0.18), transparent 65%),
+		radial-gradient(ellipse 110% 50% at 80% 30%, hsl(var(--secondary) / 0.08), transparent 40%), hsl(var(--card));
 	filter: blur(0.75rem);
 	/* match radius to outer to avoid double edges */
 	border-radius: inherit;
@@ -207,14 +151,6 @@
 /* Override the standard background for error toasts */
 .fancy-toast-error .fancy-toast-bg {
 	background:
-		radial-gradient(
-			ellipse 120% 80% at 70% 20%,
-			hsl(var(--destructive) / 0.18),
-			transparent 50%
-		),
-		radial-gradient(
-			ellipse 90% 70% at 50% 0%,
-			hsl(var(--destructive) / 0.12),
-			transparent 65%
-		), hsl(var(--card));
+		radial-gradient(ellipse 120% 80% at 70% 20%, hsl(var(--destructive) / 0.18), transparent 50%),
+		radial-gradient(ellipse 90% 70% at 50% 0%, hsl(var(--destructive) / 0.12), transparent 65%), hsl(var(--card));
 }

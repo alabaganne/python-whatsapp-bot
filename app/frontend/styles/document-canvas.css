@@ -1,0 +1,25 @@
+/* Document Canvas Viewer Styles */
+
+/* Hide unwanted modals and UI elements in viewer canvas */
+.viewer-canvas-container .excalidraw-modal,
+.viewer-canvas-container .welcome-screen-center,
+.viewer-canvas-container .zen-mode-transition,
+.viewer-canvas-container button[title*="Exit"],
+.viewer-canvas-container button[aria-label*="Exit"],
+.viewer-canvas-container button[title*="exit"],
+.viewer-canvas-container button[aria-label*="exit"],
+.viewer-canvas-container .zen-mode-transition-container,
+.viewer-canvas-container .disable-zen-mode,
+.viewer-canvas-container [class*="zen-mode"],
+.viewer-canvas-container [class*="fullscreen"] {
+	display: none;
+}
+
+/* Allow panning/zooming but keep it read-only */
+.viewer-canvas-container .excalidraw {
+	cursor: grab;
+}
+
+.viewer-canvas-container .excalidraw:active {
+	cursor: grabbing;
+}

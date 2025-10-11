@@ -198,19 +198,13 @@
 }
 
 /* Regular reservations - Check-up (type 0) - Green */
-.fc-list-event.reservation-type-0:not(.conversation-event):not(
-	[data-cancelled="true"]
-)
-.fc-list-event-dot {
+.fc-list-event.reservation-type-0:not(.conversation-event):not([data-cancelled="true"]) .fc-list-event-dot {
 	border-color: var(--fc-reservation-type-0-border);
 	background-color: var(--fc-reservation-type-0-bg);
 }
 
 /* Follow-up reservations (type 1) - Blue */
-.fc-list-event.reservation-type-1:not(.conversation-event):not(
-	[data-cancelled="true"]
-)
-.fc-list-event-dot {
+.fc-list-event.reservation-type-1:not(.conversation-event):not([data-cancelled="true"]) .fc-list-event-dot {
 	border-color: var(--fc-reservation-type-1-border);
 	background-color: var(--fc-reservation-type-1-bg);
 }

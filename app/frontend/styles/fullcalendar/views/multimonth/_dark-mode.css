@@ -7,21 +7,9 @@
 .dark .fc-multimonth {
 	background-color: hsl(var(--background));
 	background-image:
-		radial-gradient(
-			circle at 20% 80%,
-			hsl(var(--primary) / 0.03) 0%,
-			transparent 50%
-		),
-		radial-gradient(
-			circle at 80% 20%,
-			hsl(var(--accent) / 0.03) 0%,
-			transparent 50%
-		),
-		radial-gradient(
-			circle at 40% 40%,
-			hsl(var(--secondary) / 0.03) 0%,
-			transparent 50%
-		);
+		radial-gradient(circle at 20% 80%, hsl(var(--primary) / 0.03) 0%, transparent 50%),
+		radial-gradient(circle at 80% 20%, hsl(var(--accent) / 0.03) 0%, transparent 50%),
+		radial-gradient(circle at 40% 40%, hsl(var(--secondary) / 0.03) 0%, transparent 50%);
 	align-items: flex-start; /* Ensure consistent with light mode */
 }
 
@@ -52,25 +40,16 @@
 }
 
 /* Dark mode future days - ensure they have opaque card background */
-.dark .fc-multimonth
-	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(.vacation-day):not(
-		.fc-day-disabled
-	)
+.dark
+	.fc-multimonth
+	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(.vacation-day):not(.fc-day-disabled)
 	.fc-daygrid-day-frame {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--card)) 0%,
-		hsl(var(--card) / 0.98) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.98) 100%);
 }
 
 /* Dark mode past cells - ensure gradient is applied */
 .dark .fc-multimonth .fc-daygrid-day.fc-day-past .fc-daygrid-day-frame {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--muted) / 0.1) 0%,
-		hsl(var(--muted) / 0.2) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--muted) / 0.1) 0%, hsl(var(--muted) / 0.2) 100%);
 }
 
 /* Dark mode disabled days */
@@ -79,29 +58,19 @@
 }
 
 /* Dark mode today */
-.dark .fc-multimonth
-	.fc-daygrid-day.fc-day-today:not(.fc-day-past)
-	.fc-daygrid-day-frame {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--accent) / 0.2) 0%,
-		hsl(var(--accent) / 0.25) 100%
-	);
+.dark .fc-multimonth .fc-daygrid-day.fc-day-today:not(.fc-day-past) .fc-daygrid-day-frame {
+	background: linear-gradient(135deg, hsl(var(--accent) / 0.2) 0%, hsl(var(--accent) / 0.25) 100%);
 	transform: translateY(-1px);
 }
 
 /* Dark mode vacation days */
-.dark .fc-multimonth
-	.fc-daygrid-day.vacation-day:not(.fc-day-past)
-	.fc-daygrid-day-frame {
+.dark .fc-multimonth .fc-daygrid-day.vacation-day:not(.fc-day-past) .fc-daygrid-day-frame {
 	background: hsl(var(--destructive) / 0.15);
 }
 
 .dark
 	.fc-multimonth
-	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(
-		.vacation-day
-	):hover
+	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(.vacation-day):hover
 	.fc-daygrid-day-frame {
 	transform: translateY(-3px) scale(1.02);
 	box-shadow:
@@ -112,11 +81,7 @@
 }
 
 .dark .fc-multimonth-month {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--muted) / 0.08) 0%,
-		hsl(var(--muted) / 0.05) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--muted) / 0.08) 0%, hsl(var(--muted) / 0.05) 100%);
 	box-shadow:
 		0 2px 8px rgba(0, 0, 0, 0.2),
 		0 4px 16px rgba(0, 0, 0, 0.1),
@@ -125,11 +90,7 @@
 }
 
 .dark .fc-multimonth-month:hover {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--muted) / 0.12) 0%,
-		hsl(var(--muted) / 0.08) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--muted) / 0.12) 0%, hsl(var(--muted) / 0.08) 100%);
 	box-shadow:
 		0 8px 24px rgba(0, 0, 0, 0.3),
 		0 12px 32px rgba(0, 0, 0, 0.15),
@@ -139,11 +100,7 @@
 
 /* Dark mode glow effect */
 .dark .fc-multimonth-month::before {
-	background: radial-gradient(
-		circle at 50% 0%,
-		hsl(var(--primary) / 0.15) 0%,
-		transparent 70%
-	);
+	background: radial-gradient(circle at 50% 0%, hsl(var(--primary) / 0.15) 0%, transparent 70%);
 }
 
 /* Dark mode title gradient */
@@ -218,9 +175,7 @@
 }
 
 /* Dark mode selected days */
-.dark .fc-multimonth
-	.fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled)
-	.fc-daygrid-day-frame {
+.dark .fc-multimonth .fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled) .fc-daygrid-day-frame {
 	background: hsl(var(--primary) / 0.15);
 }
 
@@ -231,37 +186,31 @@
 
 /* Dark mode distinct hover states */
 /* Regular future day hover */
-.dark .fc-multimonth
-	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(
-		.vacation-day
-	):not(.fc-day-today):not(.fc-day-selected):not(:has(.fc-highlight)):hover
+.dark
+	.fc-multimonth
+	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-disabled):not(.vacation-day):not(.fc-day-today):not(
+		.fc-day-selected
+	):not(:has(.fc-highlight)):hover
 	.fc-daygrid-day-frame {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--muted) / 0.15) 0%,
-		hsl(var(--muted) / 0.25) 100%
-	);
+	background: linear-gradient(135deg, hsl(var(--muted) / 0.15) 0%, hsl(var(--muted) / 0.25) 100%);
 	border-color: hsl(var(--muted) / 0.5);
 }
 
 /* Selected/highlighted hover */
-.dark .fc-multimonth
+.dark
+	.fc-multimonth
 	.fc-daygrid-day.fc-day-selected:not(.fc-day-past):not(.fc-day-disabled):hover
 	.fc-daygrid-day-frame,
 .dark
 	.fc-multimonth
-	.fc-daygrid-day:has(.fc-highlight):not(.fc-day-past):not(
-		.fc-day-disabled
-	):hover
+	.fc-daygrid-day:has(.fc-highlight):not(.fc-day-past):not(.fc-day-disabled):hover
 	.fc-daygrid-day-frame {
 	background: hsl(var(--primary) / 0.35);
 	border-color: hsl(var(--primary) / 0.8);
 }
 
 /* Today hover */
-.dark .fc-multimonth
-	.fc-daygrid-day.fc-day-today:not(.fc-day-past):hover
-	.fc-daygrid-day-frame {
+.dark .fc-multimonth .fc-daygrid-day.fc-day-today:not(.fc-day-past):hover .fc-daygrid-day-frame {
 	background: hsl(var(--accent) / 0.4);
 	border-color: hsl(var(--accent) / 0.8);
 }

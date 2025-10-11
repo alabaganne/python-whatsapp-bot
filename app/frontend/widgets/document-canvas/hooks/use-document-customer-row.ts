@@ -95,13 +95,11 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 				providerRef.current = provider;
 				// Don't fetch if no customer selected (blank/default document)
 				if (!waId || waId.trim() === "") {
-					console.log("[useDocumentCustomerRow] ⏭️ Skipping fetch - no customer selected (blank document)");
 					return;
 				}
 
 				// Prevent duplicate fetch if already in-flight for this waId
 				if (fetchInFlightRef.current === waId) {
-					console.log(`[useDocumentCustomerRow] ⏭️ Skipping duplicate fetch for waId=${waId}`);
 					return;
 				}
 
@@ -112,25 +110,17 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 				const nameCol = customerColumns.findIndex((c) => c.id === "name");
 				const ageCol = customerColumns.findIndex((c) => c.id === "age");
 				const phoneCol = customerColumns.findIndex((c) => c.id === "phone");
-				console.log(
-					`[useDocumentCustomerRow] 📋 Column indices: nameCol=${nameCol}, ageCol=${ageCol}, phoneCol=${phoneCol}`
-				);
 				const apply = async (name: string, age: number | null) => {
-					console.log(`[useDocumentCustomerRow] 📝 Applying data: name="${name}", age=${age}`);
 					if (nameCol !== -1) {
 						await customerDataSource.setCellData(nameCol, 0, name);
-						console.log(`[useDocumentCustomerRow] ✅ Name set to: "${name}"`);
 					}
 					if (ageCol !== -1) {
 						await customerDataSource.setCellData(ageCol, 0, age);
-						console.log(`[useDocumentCustomerRow] ✅ Age set to: ${age}`);
 					} else {
 						console.error(`[useDocumentCustomerRow] ❌ Age column not found! ageCol=${ageCol}`);
 					}
 				};
 				try {
-					console.log(`[useDocumentCustomerRow] 🔍 Fetching customer via REST: waId=${waId}`);
-
 					// Signal to useDocumentScene that REST GET is in-flight
 					(globalThis as { __docRestInFlight?: boolean }).__docRestInFlight = true;
 
@@ -148,18 +138,11 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 					const restAge = (d.age ?? null) as number | null;
 					const restDocument = d.document || null;
 
-					console.log(
-						`[useDocumentCustomerRow] ✅ GET completed: waId=${waId}, name="${restName}", age=${restAge}, hasDocument=${!!restDocument}`
-					);
-
 					// Clear in-flight flag
 					(globalThis as { __docRestInFlight?: boolean }).__docRestInFlight = false;
 
 					// If document was included in response, dispatch it immediately to avoid duplicate WS fetch
 					if (restDocument) {
-						console.log(
-							"[useDocumentCustomerRow] 📄 Document included in GET response, dispatching to avoid duplicate fetch"
-						);
 						window.dispatchEvent(
 							new CustomEvent("documents:external-update", {
 								detail: {
@@ -171,13 +154,6 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 					}
 
 					await apply(restName, restAge);
-
-					// Verify the data was actually set
-					const verifyName = await customerDataSource.getCellData(nameCol, 0);
-					const verifyAge = await customerDataSource.getCellData(ageCol, 0);
-					console.log(
-						`[useDocumentCustomerRow] 🔍 Verification - Name in grid: "${verifyName}", Age in grid: ${verifyAge}`
-					);
 
 					// Clear editing state, cache, and force grid to re-render
 					try {
@@ -197,7 +173,6 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 								if (typeof phoneCol === "number" && phoneCol !== -1) {
 									rowMap.delete(phoneCol);
 								}
-								console.log("[useDocumentCustomerRow] 🧹 Cleared editing state for name, age & phone");
 							}
 						}
 
@@ -208,7 +183,6 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 							if (typeof phoneCol === "number" && phoneCol !== -1) {
 								providerWithInternals.cellCache.delete(`${phoneCol}-0`);
 							}
-							console.log("[useDocumentCustomerRow] 🧹 Cleared cache for name, age & phone cells");
 						}
 
 						// Step 3: Force grid to re-render (will fetch fresh from datasource)
@@ -225,7 +199,6 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 								cells.push({ cell: [phoneCol, 0] });
 							}
 							gridApi.updateCells(cells);
-							console.log("[useDocumentCustomerRow] 🔄 Called grid.updateCells for name, age & phone");
 						} else {
 							console.warn("[useDocumentCustomerRow] ⚠️ Grid API not available yet");
 						}
@@ -258,9 +231,6 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 							age?: number | null;
 						};
 						if (String(d?.wa_id || "") !== String(waId)) return;
-						console.log(
-							`[useDocumentCustomerRow] 📡 WS customers:profile received: waId=${waId}, name="${d?.name || ""}", age=${d?.age ?? null}`
-						);
 						resolved = true;
 						void apply((d?.name || "") as string, (d?.age ?? null) as number | null).then(() => {
 							// Notify page that customer data is loaded and ready to unlock
@@ -303,7 +273,6 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 
 			const phoneCol = customerColumns.findIndex((c) => c.id === "phone");
 
-			console.log(`[useDocumentCustomerRow] 🔄 Customer changed: ${prevWaIdRef.current} → ${waId}`);
 			prevWaIdRef.current = waId;
 
 			// Only update phone - fetch will populate name/age fresh from API
@@ -311,7 +280,6 @@ export function useDocumentCustomerRow(selectedWaId: string | null | undefined, 
 			if (phoneCol !== -1) {
 				const phoneValue = waId ? (waId.startsWith("+") ? waId : `+${waId}`) : "";
 				void customerDataSource.setCellData(phoneCol, 0, phoneValue);
-				console.log(`[useDocumentCustomerRow] 📱 Phone updated to: ${phoneValue}`);
 
 				// Clear editing/cache for the phone cell and force a UI refresh of that cell
 				try {

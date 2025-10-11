@@ -177,10 +177,10 @@ export function CalendarDrawer({
 				</SheetHeader>
 
 				{/* Dock similar to header dock, single-view settings */}
-				<div className="px-2 py-1">
+				<div className="px-2 py-1 overflow-hidden">
 					{/* No external arrows; navigation is inside the dock */}
 					<DockNav
-						className="mt-0 w-full max-w-full overflow-x-auto"
+						className="mt-0"
 						calendarRef={calendarRef}
 						currentCalendarView={calendarState.currentView}
 						onCalendarViewChange={handleViewChangeDirect}

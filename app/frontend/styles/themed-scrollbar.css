@@ -221,14 +221,12 @@
 	background-color: hsl(var(--muted-foreground) / 0.5);
 }
 
-.ScrollbarsCustom-themed.scrollbar-macos.scrollbar-autohide
-	.ScrollbarsCustom-Thumb {
+.ScrollbarsCustom-themed.scrollbar-macos.scrollbar-autohide .ScrollbarsCustom-Thumb {
 	opacity: 0;
 	transition: opacity 0.2s ease;
 }
 
-.ScrollbarsCustom-themed.scrollbar-macos.scrollbar-autohide:hover
-	.ScrollbarsCustom-Thumb {
+.ScrollbarsCustom-themed.scrollbar-macos.scrollbar-autohide:hover .ScrollbarsCustom-Thumb {
 	opacity: 1;
 }
 

@@ -91,11 +91,12 @@ export function createIdleAutosaveController(options: IdleAutosaveControllerOpti
 		}
 		// Prevent late flush for previous waId
 		lastPendingSig = null;
+		pendingPayload = null;
 	}
 
 	async function flush(payload: Omit<DocumentPayload, "waId"> & { sig?: string }): Promise<SaveResult | null> {
 		// Create combined signature: content + viewer camera + editor camera
-		const contentSig = payload.sig || computeDocumentSignature(payload);
+		const contentSig = computeDocumentSignature(payload);
 		let viewerSig = "";
 		if (payload.viewerAppState) {
 			try {
@@ -184,51 +185,63 @@ export function createIdleAutosaveController(options: IdleAutosaveControllerOpti
 		return res;
 	}
 
+	// Store pending payload to avoid recomputing signatures on every schedule call
+	let pendingPayload: (Omit<DocumentPayload, "waId"> & { sig?: string }) | null = null;
+
 	function schedule(payload: Omit<DocumentPayload, "waId"> & { sig?: string }): void {
-		cancel();
-		// Create combined signature: content + viewer camera + editor camera
-		const contentSig = payload.sig || computeDocumentSignature(payload);
-		let viewerSig = "";
-		if (payload.viewerAppState) {
-			try {
-				const zoomValue = (payload.viewerAppState.zoom as { value?: number })?.value ?? 1;
-				const scrollX = (payload.viewerAppState.scrollX as number) ?? 0;
-				const scrollY = (payload.viewerAppState.scrollY as number) ?? 0;
-				viewerSig = JSON.stringify({
-					zoom: Math.round(zoomValue * 1000) / 1000,
-					scrollX: Math.round(scrollX),
-					scrollY: Math.round(scrollY),
-				});
-			} catch {}
+		// Store the payload for later flushing
+		pendingPayload = payload;
+
+		// If timer already exists, just update the payload and let existing timer fire
+		// This avoids constant timer cancellation/recreation overhead
+		if (timer !== null) {
+			return;
 		}
-		let editorSig = "";
-		if (payload.editorAppState) {
-			try {
-				const zoomValue = (payload.editorAppState.zoom as { value?: number })?.value ?? 1;
-				const scrollX = (payload.editorAppState.scrollX as number) ?? 0;
-				const scrollY = (payload.editorAppState.scrollY as number) ?? 0;
-				editorSig = JSON.stringify({
-					zoom: Math.round(zoomValue * 1000) / 1000,
-					scrollX: Math.round(scrollX),
-					scrollY: Math.round(scrollY),
-				});
-			} catch {}
-		}
-		lastPendingSig = `${contentSig}|viewer:${viewerSig}|editor:${editorSig}`;
+
+		// Defer signature computation to flush time - just set a lightweight flag
+		lastPendingSig = "pending";
 
 		timer = window.setTimeout(() => {
-			console.log(
-				`[autosave] ⏰ idle timer fired: waId=${waId}, pendingSig=${lastPendingSig ? lastPendingSig.slice(0, 60) : "<none>"}, lastSavedSig=${lastSavedSig ? lastSavedSig.slice(0, 60) : "<none>"}, willFlush=${!!(lastPendingSig && lastPendingSig !== lastSavedSig)}`
-			);
-			if (lastPendingSig && lastPendingSig !== lastSavedSig) {
-				void flush({ ...payload, sig: contentSig });
-			} else {
-				console.log("[autosave] ⏭️ idle timer skipped flush: pendingSig matches lastSavedSig or is empty");
+			timer = null;
+			const currentPayload = pendingPayload;
+			if (currentPayload) {
+				// Compute signatures only at flush time, not on every keystroke
+				const contentSig = "";
+				let viewerSig = "";
+				if (currentPayload.viewerAppState) {
+					try {
+						const zoomValue = (currentPayload.viewerAppState.zoom as { value?: number })?.value ?? 1;
+						const scrollX = (currentPayload.viewerAppState.scrollX as number) ?? 0;
+						const scrollY = (currentPayload.viewerAppState.scrollY as number) ?? 0;
+						viewerSig = JSON.stringify({
+							zoom: Math.round(zoomValue * 1000) / 1000,
+							scrollX: Math.round(scrollX),
+							scrollY: Math.round(scrollY),
+						});
+					} catch {}
+				}
+				let editorSig = "";
+				if (currentPayload.editorAppState) {
+					try {
+						const zoomValue = (currentPayload.editorAppState.zoom as { value?: number })?.value ?? 1;
+						const scrollX = (currentPayload.editorAppState.scrollX as number) ?? 0;
+						const scrollY = (currentPayload.editorAppState.scrollY as number) ?? 0;
+						editorSig = JSON.stringify({
+							zoom: Math.round(zoomValue * 1000) / 1000,
+							scrollX: Math.round(scrollX),
+							scrollY: Math.round(scrollY),
+						});
+					} catch {}
+				}
+				const computedSig = `${contentSig ? contentSig : "rev"}|viewer:${viewerSig}|editor:${editorSig}`;
+
+				if (computedSig !== lastSavedSig) {
+					void flush(currentPayload);
+				}
 			}
+			lastPendingSig = null;
+			pendingPayload = null;
 		}, idleMs);
-		console.log(
-			`[autosave] ⏲️ idle scheduled: waId=${waId}, delay=${idleMs}ms, pendingSig=${lastPendingSig ? lastPendingSig.slice(0, 60) : "<empty>"}, lastSavedSig=${lastSavedSig ? lastSavedSig.slice(0, 60) : "<none>"}`
-		);
 	}
 
 	return { schedule, cancel, flushImmediate: flush } as const;

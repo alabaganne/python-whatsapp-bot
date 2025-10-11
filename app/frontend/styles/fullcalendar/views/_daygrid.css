@@ -32,9 +32,7 @@
 /* Daygrid body */
 .fc-daygrid-body {
 	position: relative;
-	z-index: var(
-		--z-base
-	); /* container inner z-index's because <tr>s can't do it */
+	z-index: var(--z-base); /* container inner z-index's because <tr>s can't do it */
 	/* GPU acceleration */
 	transform: translateZ(0);
 	backface-visibility: hidden;
@@ -213,8 +211,7 @@
 	box-sizing: content-box;
 	width: 0;
 	height: 0;
-	border: calc(var(--fc-daygrid-event-dot-width) / 2) solid
-		var(--fc-event-border-color);
+	border: calc(var(--fc-daygrid-event-dot-width) / 2) solid var(--fc-event-border-color);
 	border-radius: calc(var(--fc-daygrid-event-dot-width) / 2);
 	/* GPU acceleration */
 	transform: translateZ(0);
@@ -351,15 +348,8 @@
 	border-color: hsl(var(--border) / 0.2);
 }
 
-.dark
-	.fc-daygrid
-	.fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(.fc-day-disabled)
-	.fc-daygrid-day-frame {
-	background: linear-gradient(
-		135deg,
-		hsl(var(--card)) 0%,
-		hsl(var(--card) / 0.98) 100%
-	);
+.dark .fc-daygrid .fc-daygrid-day:not(.fc-day-past):not(.fc-day-today):not(.fc-day-disabled) .fc-daygrid-day-frame {
+	background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.98) 100%);
 }
 
 /* Dark mode text */
