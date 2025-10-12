@@ -35,5 +35,3 @@ export function ToastHost(): React.JSX.Element {
 		/>
 	);
 }
-
-export default ToastHost;
