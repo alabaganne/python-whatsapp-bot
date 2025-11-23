@@ -200,7 +200,7 @@ VALUES (
 ```
 
 **Option 3: Using the App**
-1. Start your Next.js app: `pnpm dev`
+1. Start your Next.js app: `npm run dev`
 2. Go to `http://localhost:3000/auth/signup`
 3. Sign up with any email/password
 4. User will be automatically confirmed in local mode
@@ -366,7 +366,7 @@ supabase start
 
 # 2. Start Next.js dev server
 cd app/frontend
-pnpm dev
+npm run dev
 
 # 3. Develop your app...
 
@@ -385,7 +385,7 @@ cd app/frontend
 supabase gen types typescript --local > src/lib/supabase/database.types.ts
 
 # 3. Restart dev server
-pnpm dev
+npm run dev
 ```
 
 ## Production Deployment

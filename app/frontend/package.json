@@ -3,19 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
-  "packageManager": "pnpm@10.1.0",
   "engines": {
-    "node": ">=20",
-    "pnpm": ">=8"
+    "node": ">=20"
   },
   "scripts": {
-    "preinstall": "node -e \"if(!(process.env.npm_config_user_agent||'').includes('pnpm')){console.error('Please use pnpm (corepack enable && pnpm).'); process.exit(1)}\"",
     "predev": "rm -rf .next",
-    "dev": "node_modules/next/dist/bin/next dev --turbo",
-    "dev:pnpm": "pnpm exec next dev --turbo",
+    "dev": "next dev --turbo",
     "dev:classic": "next dev",
     "dev:clean": "rm -rf .next && next dev --turbo",
-    "dev:reset": "rm -rf .next node_modules/.cache && pnpm install && next dev --turbo",
+    "dev:reset": "rm -rf .next node_modules/.cache && npm install && next dev --turbo",
     "build": "next build",
     "build:classic": "next build",
     "start": "next start --turbo",
@@ -27,11 +23,9 @@
     "typecheck": "tsc --noEmit",
     "knip": "knip",
     "knip:compact": "knip --reporter compact",
-    "check": "pnpm typecheck && pnpm lint:biome && pnpm format:check",
-    "fix": "pnpm lint:fix && pnpm format",
+    "check": "npm run typecheck && npm run lint:biome && npm run format:check",
+    "fix": "npm run lint:fix && npm run format",
     "clean": "rm -rf .next out dist node_modules/.cache",
-    "licenses:list": "pnpm licenses list --json > third_party_licenses.json",
-    "licenses:notice": "pnpm licenses generate-disclaimer > THIRD_PARTY_NOTICES.txt",
     "test": "vitest run",
     "test:watch": "vitest"
   },

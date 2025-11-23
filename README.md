@@ -57,7 +57,7 @@ For the original Python FastAPI version, see git history or [MIGRATION_GUIDE.md]
 
 ## Prerequisites
 
-- ✅ **Node.js 20+** and **pnpm 9+** - Required for Next.js
+- ✅ **Node.js 20+** - Required for Next.js
 - ✅ **Supabase Account** - [Sign up free here](https://supabase.com)
 - ✅ **Meta Developer Account** - [Create one here](https://developers.facebook.com/)
 - ✅ **WhatsApp Business App** - [Setup guide](https://developers.facebook.com/docs/whatsapp/business-platform/get-started)
@@ -71,7 +71,7 @@ For the original Python FastAPI version, see git history or [MIGRATION_GUIDE.md]
 ```bash
 git clone <your-repo-url>
 cd python-whatsapp-bot
-pnpm install
+npm install
 ```
 
 ### 2. Set Up Supabase
@@ -126,7 +126,7 @@ TIMEZONE=Asia/Riyadh
 
 ```bash
 cd app/frontend
-pnpm dev
+npm run dev
 ```
 
 Visit `http://localhost:3000`
@@ -451,7 +451,7 @@ pip install -r requirements-backend.in
 
 ```bash
 cd app/frontend
-pnpm install
+npm install
 ```
 
 1. **Run the FastAPI Application**

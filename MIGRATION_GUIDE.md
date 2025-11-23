@@ -176,13 +176,13 @@ supabase gen types typescript --local > src/lib/supabase/database.types.ts
 
 ```bash
 cd app/frontend
-pnpm install
+npm install
 ```
 
 ### 4. Run Development Server
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 ### 5. Deploy
