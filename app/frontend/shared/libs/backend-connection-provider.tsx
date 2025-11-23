@@ -18,6 +18,9 @@ import {
 } from '@/shared/libs/backend-connection-store'
 import { BackendConnectionOverlay } from '@/shared/ui/backend-connection-overlay'
 
+// UI-ONLY MODE: Disable backend connection checks and overlay
+const UI_ONLY_MODE = true
+
 type BackendConnectionContextValue = {
 	status: BackendConnectionStatus
 	isConnected: boolean
@@ -52,6 +55,15 @@ export const BackendConnectionProvider: FC<PropsWithChildren> = ({
 	}, [])
 
 	const contextValue = useMemo<BackendConnectionContextValue>(() => {
+		// In UI-only mode, always return connected status
+		if (UI_ONLY_MODE) {
+			return {
+				status: 'connected',
+				isConnected: true,
+				retry: handleRetry,
+			}
+		}
+
 		const base: Omit<BackendConnectionContextValue, 'lastError'> = {
 			status: snapshot.status,
 			isConnected: snapshot.status === 'connected',
@@ -62,7 +74,8 @@ export const BackendConnectionProvider: FC<PropsWithChildren> = ({
 			: base
 	}, [snapshot.status, snapshot.lastError, handleRetry])
 
-	const showOverlay = snapshot.status !== 'connected'
+	// In UI-only mode, never show the connection overlay
+	const showOverlay = !UI_ONLY_MODE && snapshot.status !== 'connected'
 
 	return (
 		<BackendConnectionContext.Provider value={contextValue}>
