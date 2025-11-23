@@ -11,7 +11,8 @@
   "scripts": {
     "preinstall": "node -e \"if(!(process.env.npm_config_user_agent||'').includes('pnpm')){console.error('Please use pnpm (corepack enable && pnpm).'); process.exit(1)}\"",
     "predev": "rm -rf .next",
-    "dev": "next dev --turbo",
+    "dev": "node_modules/next/dist/bin/next dev --turbo",
+    "dev:pnpm": "pnpm exec next dev --turbo",
     "dev:classic": "next dev",
     "dev:clean": "rm -rf .next && next dev --turbo",
     "dev:reset": "rm -rf .next node_modules/.cache && pnpm install && next dev --turbo",
