@@ -1,29 +1,25 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { callPythonBackend } from '@/shared/libs/backend'
+import { getMockVacationPeriods } from '@/lib/mock-data'
 
 export async function GET(_request: NextRequest) {
 	try {
-		// Call Python backend (helper tries backend:8000 then localhost:8000)
-		const resp = await callPythonBackend<{ success?: boolean; data?: unknown }>(
-			'/vacations'
-		)
-		if (resp && typeof resp === 'object' && 'data' in resp) {
-			return NextResponse.json({
-				success: true,
-				data: (resp as { success?: boolean; data?: unknown }).data ?? [],
-			})
-		}
-		return NextResponse.json({ success: true, data: resp ?? [] })
-	} catch (error) {
-		// If backend is not reachable, return empty array instead of error
-		if (error instanceof TypeError && error.message.includes('fetch')) {
-			return NextResponse.json({
-				success: true,
-				data: [],
-				message: 'Backend not reachable, using empty vacation periods',
-			})
-		}
+		const periods = getMockVacationPeriods()
 
+		// Format for frontend (similar to backend format)
+		const formatted = periods.map((period) => {
+			const start = new Date(period.start_date)
+			const end = new Date(period.end_date)
+
+			return {
+				start: start.toISOString(),
+				end: end.toISOString(),
+				title: period.title || `Vacation Period`,
+				duration: period.duration_days,
+			}
+		})
+
+		return NextResponse.json({ success: true, data: formatted })
+	} catch (error) {
 		return NextResponse.json(
 			{
 				success: false,

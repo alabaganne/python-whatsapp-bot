@@ -30,20 +30,24 @@ def create_app() -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         pid = os.getpid()
-        logging.info(f"startup: initializing database tables in pid {pid}")
-        from app.db import init_models
+        logging.info(f"startup: UI-only mode (no database, scheduler, or workers) in pid {pid}")
+        # Database initialization disabled for UI-only mode
+        # from app.db import init_models
+        # init_models()
 
-        init_models()
-        logging.info(f"startup: initializing scheduler in pid {pid}")
-        init_scheduler(app)
-        # Start inbound queue workers (configurable via env, default few workers for low memory)
-        try:
-            num_workers = int(os.environ.get("INBOUND_QUEUE_WORKERS", "2"))
-        except Exception:
-            num_workers = 2
-        stop_event, tasks = spawn_workers(max(1, num_workers))
-        app.state.inbound_queue_stop_event = stop_event
-        app.state.inbound_queue_tasks = tasks
+        # Scheduler disabled for UI-only mode
+        # logging.info(f"startup: initializing scheduler in pid {pid}")
+        # init_scheduler(app)
+
+        # Inbound queue workers disabled for UI-only mode
+        # try:
+        #     num_workers = int(os.environ.get("INBOUND_QUEUE_WORKERS", "2"))
+        # except Exception:
+        #     num_workers = 2
+        # stop_event, tasks = spawn_workers(max(1, num_workers))
+        # app.state.inbound_queue_stop_event = stop_event
+        # app.state.inbound_queue_tasks = tasks
+
         yield
         # Shutdown: close HTTP clients
         logging.info("shutdown: closing HTTP clients")
@@ -51,9 +55,10 @@ def create_app() -> FastAPI:
 
         await async_client.aclose()
         sync_client.close()
-        # Stop inbound queue workers
-        with suppress(Exception):
-            await stop_workers(app.state.inbound_queue_stop_event, app.state.inbound_queue_tasks)
+
+        # Stop inbound queue workers - disabled for UI-only mode
+        # with suppress(Exception):
+        #     await stop_workers(app.state.inbound_queue_stop_event, app.state.inbound_queue_tasks)
 
     app = FastAPI(default_response_class=ORJSONResponse, lifespan=lifespan)
 

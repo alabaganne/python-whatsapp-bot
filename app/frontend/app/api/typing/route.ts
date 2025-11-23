@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { callPythonBackend } from '@/shared/libs/backend'
 
 export async function POST(request: Request) {
 	try {
@@ -13,16 +12,9 @@ export async function POST(request: Request) {
 			)
 		}
 
-		const backendResponse = await callPythonBackend('/typing', {
-			method: 'POST',
-			body: JSON.stringify({
-				wa_id,
-				typing,
-				_call_source: 'frontend',
-			}),
-		})
-
-		return NextResponse.json(backendResponse)
+		// In UI-only mode, typing indicators are not sent to WhatsApp
+		// Just return success so the UI works
+		return NextResponse.json({ success: true, typing })
 	} catch (error) {
 		return NextResponse.json(
 			{

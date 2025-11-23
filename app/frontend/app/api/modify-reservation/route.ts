@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server'
-import { callPythonBackend } from '@/shared/libs/backend'
+import {
+	getMockReservations,
+	saveMockReservations,
+	getMockCustomers,
+	saveMockCustomers,
+} from '@/lib/mock-data'
 
 export async function POST(request: Request) {
 	try {
 		const body = await request.json()
-		const {
-			id,
-			date,
-			time,
-			title,
-			type,
-			approximate,
-			reservationId,
-			max_reservations,
-		} = body
+		const { id, date, time, title, type, reservationId } = body
 
 		// Validate required fields
 		if (!(id && date && time)) {
@@ -23,31 +19,67 @@ export async function POST(request: Request) {
 			)
 		}
 
-		// Call the Python backend endpoint directly - id is the WhatsApp ID
-		const payload: Record<string, unknown> = {
-			new_date: date,
-			new_time_slot: time,
-			new_name: title,
-			new_type: type || 0,
-			approximate,
-			hijri: false,
-			ar: false,
-			reservation_id_to_modify: reservationId,
-			_call_source: 'frontend',
-		}
-		if (typeof max_reservations === 'number') {
-			payload.max_reservations = max_reservations
+		const reservations = getMockReservations()
+
+		// Find the reservation to modify
+		let reservation
+		if (reservationId) {
+			reservation = reservations.find((r) => r.id === reservationId && r.wa_id === id)
+		} else {
+			// Find the first active reservation for this customer
+			reservation = reservations.find((r) => r.wa_id === id && r.status === 'active')
 		}
 
-		const backendResponse = await callPythonBackend(
-			`/reservations/${id}/modify`,
-			{
-				method: 'POST',
-				body: JSON.stringify(payload),
+		if (!reservation) {
+			return NextResponse.json(
+				{ success: false, message: 'Reservation not found' },
+				{ status: 404 }
+			)
+		}
+
+		// Store original data for response
+		const originalData = {
+			date: reservation.date,
+			time_slot: reservation.time_slot,
+			customer_name: reservation.customer_name,
+			type: reservation.type,
+		}
+
+		// Update reservation
+		reservation.date = date
+		reservation.time_slot = time
+		if (title) {
+			reservation.customer_name = title
+		}
+		if (type !== undefined) {
+			reservation.type = type
+		}
+		reservation.updated_at = new Date().toISOString()
+
+		saveMockReservations(reservations)
+
+		// Update customer name if provided
+		if (title) {
+			const customers = getMockCustomers()
+			const customer = customers.find((c) => c.wa_id === id)
+			if (customer) {
+				customer.customer_name = title
+				saveMockCustomers(customers)
 			}
-		)
+		}
 
-		return NextResponse.json(backendResponse)
+		return NextResponse.json({
+			success: true,
+			message: 'Reservation modified successfully',
+			data: {
+				reservation_id: reservation.id,
+				gregorian_date: reservation.date,
+				time_slot: reservation.time_slot,
+				type: reservation.type,
+				customer_name: reservation.customer_name,
+				original_data: originalData,
+			},
+		})
 	} catch (error) {
 		return NextResponse.json(
 			{
