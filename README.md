@@ -1,14 +1,30 @@
 # AI-WhatsApp-Reservation-App
 
+> ## 🎉 **MIGRATED TO NEXT.JS + SUPABASE**
+> This application has been fully migrated to a modern, production-ready Next.js + Supabase stack!
+> ✅ **100% Feature Parity** - All Python FastAPI features preserved
+> 🚀 **Production Ready** - Deploy to Vercel, Docker, or any Node.js host
+> 📚 **See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** for complete migration details
+>
+> **New Stack:** Next.js 16 + Supabase + TypeScript + Serverless Architecture
+
 ![alt text](media/1.png)
 ![alt text](media/Screenshot%202025-03-14%20014221.png)
 ![alt text](media/Screenshot%202025-03-14%20014527.png)
 
-A powerful WhatsApp bot built using FastAPI, integrated with multiple AI providers (OpenAI, Anthropic, and Google Gemini) for generating intelligent responses to customer inquiries. The application includes a modern Next.js frontend for managing reservations and includes a fully containerized setup with Docker for easy deployment.
+A powerful AI-powered WhatsApp reservation system built with **Next.js 16** and **Supabase**, integrated with multiple AI providers (OpenAI, Anthropic Claude, and Google Gemini) for generating intelligent responses to customer inquiries.
 
-The bot allows users to make, modify, and cancel reservations via WhatsApp, while the front-end Next.js application provides a graphical interface for managing reservations, analyzing conversation data, and visualizing business metrics.
+The bot allows users to make, modify, and cancel reservations via WhatsApp, while the Next.js application provides a modern full-stack interface for managing reservations, analyzing conversation data, and visualizing business metrics.
 
-For the original repository and setup tutorial (Flask version), please refer to [this GitHub repository](https://github.com/daveebbelaar/python-whatsapp-bot).
+**Key Technologies:**
+- ⚡ **Next.js 16** - Full-stack framework with App Router & Server Actions
+- 🗄️ **Supabase** - PostgreSQL, Auth, Realtime, Edge Functions
+- 🤖 **Multi-AI Support** - OpenAI GPT-4, Anthropic Claude, Google Gemini
+- 💬 **WhatsApp Business API** - Official Meta WhatsApp integration
+- 🎨 **Modern UI** - TailwindCSS, Radix UI, Framer Motion
+- 🚀 **Serverless** - Deploy to Vercel or any platform
+
+For the original Python FastAPI version, see git history or [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md).
 
 ## Features
 
@@ -41,12 +57,113 @@ For the original repository and setup tutorial (Flask version), please refer to 
 
 ## Prerequisites
 
-- A Meta developer account. If you don't have one, [create a Meta developer account here](https://developers.facebook.com/).
-- A business app. If you don't have one, [learn to create a business app here](https://developers.facebook.com/docs/development/create-an-app/).
-- Docker and Docker Compose (for containerized deployment)
-- Node.js 20+ and pnpm 8+ (for frontend development)
-- Python 3.9+ (for backend development)
-- API keys for your chosen AI provider(s): OpenAI, Anthropic, and/or Google Gemini
+- ✅ **Node.js 20+** - Required for Next.js
+- ✅ **Supabase Account** - [Sign up free here](https://supabase.com)
+- ✅ **Meta Developer Account** - [Create one here](https://developers.facebook.com/)
+- ✅ **WhatsApp Business App** - [Setup guide](https://developers.facebook.com/docs/whatsapp/business-platform/get-started)
+- ✅ **AI API Key** - At least one of: OpenAI, Anthropic, or Gemini
+- 📦 _(Optional)_ Docker for containerized deployment
+
+## Quick Start (Next.js + Supabase)
+
+### 1. Clone and Install
+
+```bash
+git clone <your-repo-url>
+cd python-whatsapp-bot
+npm install
+```
+
+### 2. Set Up Supabase
+
+```bash
+# Install Supabase CLI
+npm install -g supabase
+
+# Login to Supabase
+supabase login
+
+# Link your project
+cd app/frontend
+supabase link --project-ref <your-project-id>
+
+# Push database migrations
+supabase db push
+
+# Generate TypeScript types
+supabase gen types typescript --local > src/lib/supabase/database.types.ts
+```
+
+### 3. Configure Environment
+
+Create `app/frontend/.env.local`:
+
+```env
+# Supabase (get from https://app.supabase.com/project/_/settings/api)
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx
+SUPABASE_SERVICE_ROLE_KEY=eyJxxx
+
+# WhatsApp Business API
+WHATSAPP_ACCESS_TOKEN=EAAxxxxx
+WHATSAPP_PHONE_NUMBER_ID=123456789
+WHATSAPP_VERIFY_TOKEN=your-custom-verify-token
+WHATSAPP_APP_SECRET=xxxxx
+
+# AI Provider (choose one)
+LLM_PROVIDER=anthropic  # or openai, gemini
+ANTHROPIC_API_KEY=sk-ant-xxx
+OPENAI_API_KEY=sk-xxx
+GEMINI_API_KEY=xxx
+
+# Business Info
+BUSINESS_NAME="Your Clinic"
+BUSINESS_ADDRESS="Your Address"
+TIMEZONE=Asia/Riyadh
+```
+
+### 4. Run Development Server
+
+```bash
+cd app/frontend
+npm run dev
+```
+
+Visit `http://localhost:3000`
+
+### 5. Set Up WhatsApp Webhook
+
+1. Go to Meta App Dashboard → WhatsApp → Configuration
+2. Set Webhook URL: `https://your-domain.com/api/webhook`
+3. Set Verify Token: (same as `WHATSAPP_VERIFY_TOKEN`)
+4. Subscribe to `messages` events
+
+### 6. Deploy to Production
+
+**Vercel (Recommended):**
+```bash
+vercel --prod
+```
+
+**Or Docker:**
+```bash
+docker-compose -f docker-compose.nextjs.yml up -d
+```
+
+**Set up Supabase Edge Functions:**
+```bash
+supabase functions deploy send-reminders
+# Configure cron in Supabase dashboard: 0 19 * * * (7 PM daily)
+```
+
+---
+
+## Legacy Python Backend
+
+> **Note:** The Python FastAPI backend is now deprecated. Use the Next.js + Supabase version above.
+> For migration details, see [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md).
+
+The sections below document the original Python setup (preserved for reference):
 
 ## Key Technologies
 
@@ -334,7 +451,7 @@ pip install -r requirements-backend.in
 
 ```bash
 cd app/frontend
-pnpm install
+npm install
 ```
 
 1. **Run the FastAPI Application**

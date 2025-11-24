@@ -6,28 +6,23 @@
   "workspaces": [
     "app/frontend"
   ],
-  "packageManager": "pnpm@9.12.3",
   "engines": {
-    "node": ">=20",
-    "pnpm": ">=8"
+    "node": ">=20"
   },
   "scripts": {
-    "dev": "pnpm --filter ./app/frontend dev",
-    "build": "pnpm --filter ./app/frontend build",
-    "start": "pnpm --filter ./app/frontend start",
-    "lint": "pnpm --filter ./app/frontend lint",
-    "lint:fix": "pnpm --filter ./app/frontend lint:fix",
-    "format": "pnpm --filter ./app/frontend format",
-    "typecheck": "pnpm --filter ./app/frontend typecheck",
-    "knip": "pnpm --filter ./app/frontend knip",
-    "check": "pnpm --filter ./app/frontend check",
+    "dev": "npm run dev -w app/frontend",
+    "build": "npm run build -w app/frontend",
+    "start": "npm run start -w app/frontend",
+    "lint": "npm run lint -w app/frontend",
+    "lint:fix": "npm run lint:fix -w app/frontend",
+    "format": "npm run format -w app/frontend",
+    "typecheck": "npm run typecheck -w app/frontend",
+    "knip": "npm run knip -w app/frontend",
+    "check": "npm run check -w app/frontend",
     "check:python": "uv run ruff check . && uv run ruff format --check .",
     "fix:python": "uv run ruff check --fix --unsafe-fixes . && uv run ruff format .",
-    "licenses:js": "pnpm --filter ./app/frontend licenses list --json > app/frontend/third_party_licenses.json",
-    "licenses:js:notice": "pnpm --filter ./app/frontend licenses generate-disclaimer > app/frontend/THIRD_PARTY_NOTICES.txt",
-    "licenses:python": "python -m piplicenses --format=markdown --with-authors --with-urls --with-license-file --no-license-path --output-file THIRD_PARTY_LICENSES_PY.md",
-    "test": "pnpm --filter ./app/frontend test",
-    "test:watch": "pnpm --filter ./app/frontend test:watch"
+    "test": "npm run test -w app/frontend",
+    "test:watch": "npm run test:watch -w app/frontend"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.3",

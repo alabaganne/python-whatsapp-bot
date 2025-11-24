@@ -37,16 +37,17 @@
     ],
     "types": ["node"],
     "paths": {
-      "@/*": ["./*"],
-      "@/app/*": ["./app/*"],
+      "@/*": ["./src/*", "./*"],
+      "@/app/*": ["./src/app/*"],
       "@/compositions/*": ["./compositions/*"],
       "@/widgets/*": ["./widgets/*"],
-      "@/features/*": ["./features/*"],
+      "@/features/*": ["./features/*", "./src/features/*"],
       "@/entities/*": ["./entities/*"],
       "@/shared/*": ["./shared/*"],
       "@shared/*": ["./shared/*"],
       "@ui/*": ["./shared/ui/*"],
-      "@ui": ["./shared/ui"]
+      "@ui": ["./shared/ui"],
+      "@/lib/*": ["./src/lib/*"]
     },
     "target": "ES2020"
   },

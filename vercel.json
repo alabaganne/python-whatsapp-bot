@@ -1,0 +1,26 @@
+{
+  "buildCommand": "cd app/frontend && pnpm build",
+  "outputDirectory": "app/frontend/.next",
+  "devCommand": "cd app/frontend && pnpm dev",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key",
+    "WHATSAPP_ACCESS_TOKEN": "@whatsapp-access-token",
+    "WHATSAPP_PHONE_NUMBER_ID": "@whatsapp-phone-number-id",
+    "WHATSAPP_VERIFY_TOKEN": "@whatsapp-verify-token",
+    "WHATSAPP_APP_SECRET": "@whatsapp-app-secret",
+    "ANTHROPIC_API_KEY": "@anthropic-api-key",
+    "OPENAI_API_KEY": "@openai-api-key",
+    "GEMINI_API_KEY": "@gemini-api-key"
+  },
+  "crons": [
+    {
+      "path": "/api/cron/send-reminders",
+      "schedule": "0 19 * * *"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*", "./*"],
+      "@/app/*": ["./src/app/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/features/*": ["./features/*", "./src/features/*"],
+      "@/compositions/*": ["./compositions/*"],
+      "@/widgets/*": ["./widgets/*"],
+      "@/entities/*": ["./entities/*"],
+      "@/shared/*": ["./shared/*"],
+      "@shared/*": ["./shared/*"],
+      "@ui/*": ["./shared/ui/*"],
+      "@ui": ["./shared/ui"]
+    }
+  },
+  "exclude": ["node_modules", ".next"]
+}
