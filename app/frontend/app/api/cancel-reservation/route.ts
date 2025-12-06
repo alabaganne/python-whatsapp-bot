@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { callPythonBackend } from '@/shared/libs/backend'
+import { getMockReservations, saveMockReservations } from '@/lib/mock-data'
 
 export async function POST(request: Request) {
 	try {
 		const body = await request.json()
-		const { id, date, isLocalized } = body
+		const { id, date } = body
 
 		// Validate required fields
 		if (!(id && date)) {
@@ -14,21 +14,36 @@ export async function POST(request: Request) {
 			)
 		}
 
-		// Use the correct Python backend endpoint structure: POST /reservations/{wa_id}/cancel
-		const backendResponse = await callPythonBackend(
-			`/reservations/${id}/cancel`,
-			{
-				method: 'POST',
-				body: JSON.stringify({
-					date_str: date, // Python backend expects 'date_str', not 'date'
-					hijri: false, // Default to Gregorian calendar
-					ar: isLocalized, // Use the passed language setting
-					_call_source: 'frontend', // Tag as frontend-initiated to filter notifications
-				}),
-			}
-		)
+		const reservations = getMockReservations()
 
-		return NextResponse.json(backendResponse)
+		// Find and cancel reservations for this customer and date
+		const cancelledIds: number[] = []
+		let found = false
+
+		for (const reservation of reservations) {
+			if (reservation.wa_id === id && reservation.date === date && reservation.status === 'active') {
+				reservation.status = 'cancelled'
+				reservation.cancelled_at = new Date().toISOString()
+				reservation.updated_at = new Date().toISOString()
+				cancelledIds.push(reservation.id)
+				found = true
+			}
+		}
+
+		if (!found) {
+			return NextResponse.json(
+				{ success: false, message: 'No active reservation found for this date' },
+				{ status: 404 }
+			)
+		}
+
+		saveMockReservations(reservations)
+
+		return NextResponse.json({
+			success: true,
+			message: 'Reservation(s) cancelled successfully',
+			data: { cancelled_ids: cancelledIds },
+		})
 	} catch (error) {
 		return NextResponse.json(
 			{

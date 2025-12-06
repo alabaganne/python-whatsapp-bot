@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { callPythonBackend } from '@/shared/libs/backend'
+import { getMockConversations, saveMockConversations, getNextId } from '@/lib/mock-data'
 
 export async function POST(request: Request) {
 	try {
@@ -27,19 +27,29 @@ export async function POST(request: Request) {
 			)
 		}
 
-		// Call Python backend to append message to conversation
-		const backendResponse = await callPythonBackend(`/conversations/${wa_id}`, {
-			method: 'POST',
-			body: JSON.stringify({
-				role,
-				message,
-				date,
-				time,
-				// No _call_source needed - this endpoint doesn't broadcast notifications
-			}),
+		const conversations = getMockConversations()
+
+		// Get or create conversation for this customer
+		if (!conversations[wa_id]) {
+			conversations[wa_id] = []
+		}
+
+		// Add new message
+		const allMessages = Object.values(conversations).flat()
+		const newId = allMessages.length > 0 ? Math.max(...allMessages.map(m => m.id)) + 1 : 1
+
+		conversations[wa_id].push({
+			id: newId,
+			wa_id,
+			role: role as any,
+			message,
+			date,
+			time,
 		})
 
-		return NextResponse.json(backendResponse)
+		saveMockConversations(conversations)
+
+		return NextResponse.json({ success: true })
 	} catch (error) {
 		return NextResponse.json(
 			{

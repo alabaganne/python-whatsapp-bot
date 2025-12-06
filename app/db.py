@@ -349,4 +349,5 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 # Initialize tables on import to preserve previous behavior
-init_models()
+# Disabled for UI-only mode - no database required
+# init_models()

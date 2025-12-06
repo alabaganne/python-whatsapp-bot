@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { callPythonBackend } from '@/shared/libs/backend'
 
 export async function POST(request: Request) {
 	try {
@@ -14,17 +13,13 @@ export async function POST(request: Request) {
 			)
 		}
 
-		// Call Python backend to send WhatsApp message
-		const backendResponse = await callPythonBackend('/whatsapp/message', {
-			method: 'POST',
-			body: JSON.stringify({
-				wa_id,
-				text,
-				_call_source: 'frontend', // Tag as frontend-initiated to filter notifications
-			}),
+		// In UI-only mode, we don't actually send WhatsApp messages
+		// Just return success so the UI works
+		return NextResponse.json({
+			success: true,
+			status: 'ok',
+			message: 'Message sent successfully (UI-only mode - not actually sent via WhatsApp)',
 		})
-
-		return NextResponse.json(backendResponse)
 	} catch (error) {
 		return NextResponse.json(
 			{

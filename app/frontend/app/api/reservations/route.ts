@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { callPythonBackend } from '@/shared/libs/backend'
+import { getMockReservations, type MockReservation } from '@/lib/mock-data'
 
 export async function GET(req: NextRequest) {
 	try {
@@ -11,27 +11,36 @@ export async function GET(req: NextRequest) {
 		const fromDate = url.searchParams.get('from_date') // YYYY-MM-DD format
 		const toDate = url.searchParams.get('to_date') // YYYY-MM-DD format
 
-		// Build parameters for Python backend
-		const params = new URLSearchParams({
-			future: future.toString(),
-			include_cancelled: includeCancelled.toString(),
-		})
+		let reservations = getMockReservations()
 
-		// Add date range filtering if provided
+		// Filter by status
+		if (!includeCancelled) {
+			reservations = reservations.filter((r) => r.status === 'active')
+		}
+
+		// Filter by date range
+		const today = new Date().toISOString().split('T')[0]
+		if (future) {
+			reservations = reservations.filter((r) => r.date >= today)
+		}
 		if (fromDate) {
-			params.append('from_date', fromDate)
+			reservations = reservations.filter((r) => r.date >= fromDate)
 		}
 		if (toDate) {
-			params.append('to_date', toDate)
+			reservations = reservations.filter((r) => r.date <= toDate)
 		}
 
-		const backendResponse = await callPythonBackend(`/reservations?${params}`)
+		// Group by date (matching backend format)
+		const grouped: Record<string, MockReservation[]> = {}
+		for (const reservation of reservations) {
+			if (!grouped[reservation.date]) {
+				grouped[reservation.date] = []
+			}
+			grouped[reservation.date].push(reservation)
+		}
 
-		// The Python backend should return the data in the expected format
-		// { success: true, data: Record<string, Reservation[]> }
-		return NextResponse.json(backendResponse)
+		return NextResponse.json({ success: true, data: grouped })
 	} catch (error) {
-		// Return empty data structure on error to prevent breaking the frontend
 		return NextResponse.json(
 			{
 				success: false,

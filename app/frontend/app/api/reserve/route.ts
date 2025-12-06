@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
-import { callPythonBackend } from '@/shared/libs/backend'
+import {
+	getMockReservations,
+	saveMockReservations,
+	getMockCustomers,
+	saveMockCustomers,
+	getNextId,
+} from '@/lib/mock-data'
 
 export async function POST(request: Request) {
 	try {
 		const body = await request.json()
-		const { id, title, date, time, type, max_reservations, hijri, ar } = body
+		const { id, title, date, time, type } = body
 
 		// Validate required fields
 		if (!(id && title && date && time)) {
@@ -17,27 +23,52 @@ export async function POST(request: Request) {
 			)
 		}
 
-		const payload: Record<string, unknown> = {
+		const reservations = getMockReservations()
+		const customers = getMockCustomers()
+
+		// Ensure customer exists
+		let customer = customers.find((c) => c.wa_id === id)
+		if (!customer) {
+			customer = {
+				wa_id: id,
+				customer_name: title,
+				is_blocked: false,
+				is_favorite: false,
+			}
+			customers.push(customer)
+			saveMockCustomers(customers)
+		} else if (customer.customer_name !== title) {
+			customer.customer_name = title
+			saveMockCustomers(customers)
+		}
+
+		// Create new reservation
+		const now = new Date().toISOString()
+		const newReservation = {
+			id: getNextId(reservations),
 			wa_id: id,
 			customer_name: title,
-			date_str: date,
+			date,
 			time_slot: time,
-			reservation_type: type || 0,
-			hijri,
-			ar,
-			_call_source: 'frontend',
-		}
-		if (typeof max_reservations === 'number') {
-			payload.max_reservations = max_reservations
+			type: type || 0,
+			status: 'active' as const,
+			created_at: now,
+			updated_at: now,
 		}
 
-		// Call the Python backend with parameters that match reserve_time_slot function
-		const backendResponse = await callPythonBackend('/reserve', {
-			method: 'POST',
-			body: JSON.stringify(payload),
+		reservations.push(newReservation)
+		saveMockReservations(reservations)
+
+		return NextResponse.json({
+			success: true,
+			data: {
+				reservation_id: newReservation.id,
+				gregorian_date: date,
+				time_slot: time,
+				type: newReservation.type,
+			},
+			message: 'Reservation created successfully',
 		})
-
-		return NextResponse.json(backendResponse)
 	} catch (error) {
 		return NextResponse.json(
 			{
